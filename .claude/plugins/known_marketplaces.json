@@ -1,0 +1,11 @@
+{
+  "claude-plugins-official": {
+    "source": {
+      "source": "github",
+      "repo": "anthropics/claude-plugins-official"
+    },
+    "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/claude-plugins-official",
+    "lastUpdated": "2026-06-08T03:38:47.978Z",
+    "autoUpdate": true
+  }
+}
