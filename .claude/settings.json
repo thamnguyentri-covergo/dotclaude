@@ -1,7 +1,4 @@
 {
-  "enabledPlugins": {
-    "skill-creator@claude-plugins-official": true
-  },
   "permissions": {
     "allow": [
       "Bash(grep *)",
@@ -11,7 +8,22 @@
       "Bash(touch *)",
       "Bash(curl *)",
       "Bash(find *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(claude plugin *)",
+      "mcp__claude_ai_Atlassian_Rovo_2"
     ]
+  },
+  "model": "opus[1m]",
+  "enabledPlugins": {
+    "skill-creator@claude-plugins-official": true,
+    "caveman@caveman": true
+  },
+  "extraKnownMarketplaces": {
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    }
   }
 }
