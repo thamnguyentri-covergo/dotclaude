@@ -90,12 +90,12 @@ fi
 
 IFS='|' read -r IS_GIT BRANCH_NAME STAGED MODIFIED < "$CACHE_FILE"
 
-# Context bar — 10 chars, heavy for filled, light for empty
+# Context bar — 10 chars, block medium style: ████▒▒▒▒▒▒
 FILLED=$((PCT * 10 / 100))
 EMPTY=$((10 - FILLED))
 BAR=""
-[ "$FILLED" -gt 0 ] && BAR="${FG_MAUVE}$(printf "%${FILLED}s" | tr ' ' '━')"
-[ "$EMPTY"  -gt 0 ] && BAR="${BAR}${FG_DIM}$(printf "%${EMPTY}s" | tr ' ' '─')"
+[ "$FILLED" -gt 0 ] && BAR="${FG_MAUVE}$(printf "%${FILLED}s" | tr ' ' '█')"
+[ "$EMPTY"  -gt 0 ] && BAR="${BAR}${FG_DIM}$(printf "%${EMPTY}s" | tr ' ' '▒')"
 BAR="${BAR}${RESET}"
 
 # Token usage formatting (e.g. "12k/200k")
