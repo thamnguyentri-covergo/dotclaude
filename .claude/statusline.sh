@@ -37,9 +37,9 @@ RESET=$'\e[0m'
 
 # Nerd Font glyphs
 SEP='|'
-CHIP=''   # U+F2DB fa-microchip
+CHIP='✨'   # U+274B eight teardrop-spoked propeller asterisk
 BRANCH='' # U+E0A0
-ROBOT=''  # U+F544 fa-robot
+ROBOT=''  # U+F544 fa-robot󱙺
 
 # Extract all fields in one jq call (unit separator to handle empty fields)
 IFS=$'\x1f' read -r CURRENT_DIR MODEL DIR PCT USED_TOKENS MAX_TOKENS COST VIM_MODE DURATION_MS STYLE AGENT TOTAL_INPUT TOTAL_OUTPUT CTX_SIZE REMAINING_PCT CURRENT_USAGE EXCEEDS_200K WORKTREE_NAME WORKTREE_BRANCH < <(
@@ -122,13 +122,13 @@ OUTPUT_FMT=$(awk -v t="$TOTAL_OUTPUT" 'BEGIN {
 }')
 
 # Cost formatting
-COST_FMT=$(awk -v c="$COST" 'BEGIN { printf "💵 %.2f$", c+0 }')
+COST_FMT=$(awk -v c="$COST" 'BEGIN { printf "💸 %.2f$", c+0 }')
 
 # Duration formatting
 DURATION_FMT=$(awk -v ms="$DURATION_MS" 'BEGIN {
     s = int(ms / 1000); m = int(s / 60); h = int(m / 60)
-    if (h > 0) printf "⏱️ %dh%dm", h, m % 60
-    else        printf "⏱️ %dm", m
+    if (h > 0) printf "⏰ %dh%dm", h, m % 60
+    else        printf "⏰ %dm", m
 }')
 
 # Git segment color — yellow if dirty, green if clean
