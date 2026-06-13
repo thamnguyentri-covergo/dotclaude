@@ -5,7 +5,49 @@
       "repo": "anthropics/claude-plugins-official"
     },
     "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/claude-plugins-official",
-    "lastUpdated": "2026-06-08T03:38:47.978Z",
+    "lastUpdated": "2026-06-12T09:53:13.929Z",
     "autoUpdate": true
+  },
+  "nx-claude-plugins": {
+    "source": {
+      "source": "github",
+      "repo": "nrwl/nx-ai-agents-config"
+    },
+    "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/nx-claude-plugins",
+    "lastUpdated": "2026-06-11T03:31:42.979Z",
+    "autoUpdate": true
+  },
+  "covergo-marketplace": {
+    "source": {
+      "source": "github",
+      "repo": "CoverGo/CoverGo.Workspace"
+    },
+    "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/covergo-marketplace",
+    "lastUpdated": "2026-06-12T09:53:13.634Z",
+    "autoUpdate": true
+  },
+  "caveman": {
+    "source": {
+      "source": "github",
+      "repo": "JuliusBrussee/caveman"
+    },
+    "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/caveman",
+    "lastUpdated": "2026-06-09T10:58:58.705Z"
+  },
+  "addy-agent-skills": {
+    "source": {
+      "source": "github",
+      "repo": "addyosmani/agent-skills"
+    },
+    "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/addy-agent-skills",
+    "lastUpdated": "2026-06-11T03:50:21.459Z"
+  },
+  "understand-anything": {
+    "source": {
+      "source": "github",
+      "repo": "Lum1104/Understand-Anything"
+    },
+    "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/understand-anything",
+    "lastUpdated": "2026-06-11T03:50:27.294Z"
   }
 }
