@@ -1,1 +1,7 @@
 # dotclaude
+
+## Install
+
+```sh
+sync
+```

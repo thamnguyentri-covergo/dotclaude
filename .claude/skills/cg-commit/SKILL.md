@@ -1,5 +1,5 @@
 ---
-name: covergo-commit
+name: cg-commit
 description: Generate a git commit message following CoverGo's standard (Jira-prefixed title + optional body with context/problem/solution). Use when the user asks to "commit", "write a commit message", or runs /covergo-commit. Source standard - https://covergo.atlassian.net/wiki/spaces/Engineering/pages/681017357/Commit+message+the+right+way
 ---
 

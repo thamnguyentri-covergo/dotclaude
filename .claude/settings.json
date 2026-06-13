@@ -1,6 +1,7 @@
 {
   "permissions": {
     "allow": [
+      "Read(~/**)",
       "Bash(grep *)",
       "Bash(ls *)",
       "Bash(cat *)",
@@ -26,7 +27,6 @@
     "command": "bash ~/.claude/statusline.sh",
     "padding": 0
   },
-  "model": "opus[1m]",
   "enabledPlugins": {
     "skill-creator@claude-plugins-official": true,
     "caveman@caveman": true

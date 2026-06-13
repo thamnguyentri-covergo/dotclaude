@@ -1,5 +1,5 @@
 ---
-name: covergo-pr
+name: cg-pr
 description: Create a GitHub pull request following CoverGo's PR guideline. Reads the linked Jira ticket (title + description), inspects the current branch's diff, drafts a compliant PR title and description, then opens the PR with `gh pr create`. Use when the user runs /covergo-pr <Jira-link> or asks to "open a CoverGo PR" / "create PR for ticket X". Source guideline - https://covergo.atlassian.net/wiki/spaces/Engineering/pages/1166639159/Pull+Request+Creation+and+Review+Guideline
 ---
 
