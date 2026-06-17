@@ -4,6 +4,7 @@
       "Read(~/**)",
       "Bash(cd *)",
       "Bash(grep *)",
+      "Bash(awk *)",
       "Bash(ls *)",
       "Bash(cat *)",
       "Bash(mkdir *)",
@@ -13,6 +14,7 @@
       "Bash(find * -exec grep *)",
       "Bash(sed *)",
       "Bash(xxd *)",
+      "Bash(kubectl *)",
       "Edit(.claude)",
       "Bash(git *)",
       "Bash(claude plugin *)",
@@ -27,6 +29,7 @@
       "mcp__codegraph__codegraph_status"
     ]
   },
+  "model": "opus[1m]",
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline.sh",
@@ -34,13 +37,20 @@
   },
   "enabledPlugins": {
     "skill-creator@claude-plugins-official": true,
-    "caveman@caveman": true
+    "caveman@caveman": true,
+    "andrej-karpathy-skills@karpathy-skills": true
   },
   "extraKnownMarketplaces": {
     "caveman": {
       "source": {
         "source": "github",
         "repo": "JuliusBrussee/caveman"
+      }
+    },
+    "karpathy-skills": {
+      "source": {
+        "source": "github",
+        "repo": "forrestchang/andrej-karpathy-skills"
       }
     }
   }
