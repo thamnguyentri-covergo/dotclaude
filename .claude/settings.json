@@ -11,7 +11,6 @@
       "Bash(touch *)",
       "Bash(curl *)",
       "Bash(find *)",
-      "Bash(find * -exec grep *)",
       "Bash(sed *)",
       "Bash(xxd *)",
       "Bash(kubectl *)",
@@ -66,7 +65,8 @@
     "andrej-karpathy-skills@karpathy-skills": true,
     "caveman@caveman": true,
     "ponytail@ponytail": true,
-    "skill-creator@claude-plugins-official": true
+    "skill-creator@claude-plugins-official": true,
+    "i-have-adhd@i-have-adhd": true
   },
   "extraKnownMarketplaces": {
     "addy-agent-skills": {
@@ -91,6 +91,12 @@
       "source": {
         "source": "github",
         "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "i-have-adhd": {
+      "source": {
+        "source": "github",
+        "repo": "ayghri/i-have-adhd"
       }
     }
   },
