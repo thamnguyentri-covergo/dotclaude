@@ -5,7 +5,7 @@
       "repo": "anthropics/claude-plugins-official"
     },
     "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/claude-plugins-official",
-    "lastUpdated": "2026-06-13T15:03:49.209Z",
+    "lastUpdated": "2026-09-11T17:22:49.778Z",
     "autoUpdate": true
   },
   "nx-claude-plugins": {
@@ -14,7 +14,7 @@
       "repo": "nrwl/nx-ai-agents-config"
     },
     "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/nx-claude-plugins",
-    "lastUpdated": "2026-06-13T15:33:27.491Z",
+    "lastUpdated": "2026-09-11T17:22:52.335Z",
     "autoUpdate": true
   },
   "covergo-marketplace": {
@@ -23,7 +23,7 @@
       "repo": "CoverGo/CoverGo.Workspace"
     },
     "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/covergo-marketplace",
-    "lastUpdated": "2026-06-13T15:33:24.446Z",
+    "lastUpdated": "2026-09-11T17:22:55.349Z",
     "autoUpdate": true
   },
   "caveman": {
@@ -49,5 +49,21 @@
     },
     "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/understand-anything",
     "lastUpdated": "2026-06-11T03:50:27.294Z"
+  },
+  "karpathy-skills": {
+    "source": {
+      "source": "github",
+      "repo": "forrestchang/andrej-karpathy-skills"
+    },
+    "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/karpathy-skills",
+    "lastUpdated": "2026-06-14T07:49:41.120Z"
+  },
+  "ponytail": {
+    "source": {
+      "source": "github",
+      "repo": "DietrichGebert/ponytail"
+    },
+    "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/ponytail",
+    "lastUpdated": "2026-06-25T03:27:27.038Z"
   }
 }

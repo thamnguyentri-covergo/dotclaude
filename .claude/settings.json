@@ -30,17 +30,51 @@
     ]
   },
   "model": "opus[1m]",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/thamnguyen-covergo/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '%s' \"BREVITY RULE ACTIVE (~/.claude/rules/brevity.md). Answer as: Problem (1 sentence) / Action (verbatim command or diff) / Caveat (<=1 line, only if omitting it breaks something). Max 3 prose lines outside code blocks. No preamble, no summary of work done, no unrequested alternatives or tradeoffs, no mechanism unless asked why/how. Never cut: security, data-loss, irreversible-action warnings, ordered multi-step sequences.\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline.sh",
     "padding": 0
   },
   "enabledPlugins": {
-    "skill-creator@claude-plugins-official": true,
+    "agent-skills@addy-agent-skills": true,
+    "andrej-karpathy-skills@karpathy-skills": true,
     "caveman@caveman": true,
-    "andrej-karpathy-skills@karpathy-skills": true
+    "ponytail@ponytail": true,
+    "skill-creator@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
+    "addy-agent-skills": {
+      "source": {
+        "source": "github",
+        "repo": "addyosmani/agent-skills"
+      }
+    },
     "caveman": {
       "source": {
         "source": "github",
@@ -52,6 +86,18 @@
         "source": "github",
         "repo": "forrestchang/andrej-karpathy-skills"
       }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
     }
-  }
+  },
+  "effortLevel": "high",
+  "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "light",
+  "preferredNotifChannel": "ghostty",
+  "switchModelsOnFlag": false
 }
