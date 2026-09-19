@@ -121,28 +121,38 @@ the table rather than smoothing it over. The user is the tiebreaker.
 
 ## Step 4: Present the table, then ask
 
-Compact table first, full replies below it. The table is for deciding; the
-replies are for editing.
+Write for a reader who skims. Table first to decide, one short block per thread
+to edit. Never a paragraph — every line is labelled and stands alone.
+
+The `Action` column has exactly two values: `Reply + fix` or `Reply only`.
 
 ```
-| # | Location | Reviewer | Comment | Verdict | Conf | Proposed action |
+| # | Location | Reviewer | Comment | Verdict | Conf | Action |
 |---|---|---|---|---|---|---|
-| T1 | src/routes/migrations.js:10 | copilot | async errors not forwarded | invalid | high | Reply only — Express 5 handles it |
-| T2 | src/registry/lock.js:42 | alice | missing type in query filter | valid (bug) | high | Fix: add `type` to filter, then reply |
+| T1 | src/routes/migrations.js:10 | copilot | async errors not forwarded | invalid | high | Reply only |
+| T2 | src/registry/lock.js:42 | alice | missing type in query filter | valid (bug) | high | Reply + fix |
 ```
 
-Then for each thread:
+Then one block per thread. Fixed labels, one line each, hard cap as shown:
 
 ```
-**T1** — invalid, high confidence
-Evidence: package.json pins express ^5.1.0; Express 5 forwards async rejections.
-Reply: "Express 5 does forward async errors — we're on 5.1, so this hits the error middleware already."
-
-**T2** — valid (bug), high confidence
-Evidence: tasks index is (migration_id, environment, tenant, type); this query omits type, matching a non-unique prefix.
-Fix plan: src/registry/lock.js:42 — add `type` to the findOne filter.
-Reply: "Good catch — that query was matching a non-unique index prefix. Fixed in the next push."
+**T2** valid (bug) · high · src/registry/lock.js:42 · alice
+👮‍♂️ Reviewer says: query filter is missing `type`
+🔍 Verified in code: index is (migration_id, environment, tenant, type) — this query matches a non-unique prefix
+🤖 Action: Reply + fix
+🛠️ Fix: src/registry/lock.js:42 — add `type` to the findOne filter
+💬 Reply: "Good catch — that query was matching a non-unique index prefix. Fixed in the next push."
 ```
+
+Rules for the block:
+
+- `👮‍♂️ Reviewer says` — the comment in under 10 words. Not quoted back in full.
+- `🔍 Verified in code` — one line, max two, with `file:line`. For a valid verdict it confirms the gap; for an invalid one it states the fact that kills the claim.
+- `🤖 Action` — `Reply + fix` when a `Fix` line follows, `Reply only` when the block is just a reply. Must match the table row.
+- `🛠️ Fix` — one line: `file:line — what changes`. Drop the line entirely when the action is `Reply only`.
+- `💬 Reply` — verbatim, quoted, as it will be posted.
+- No block runs past 6 lines. Long evidence gets cut, not wrapped — the user asks if they want more.
+- More than 5 threads: show the first 5, say how many are left, show the rest once those are answered.
 
 Then ask verbatim:
 
