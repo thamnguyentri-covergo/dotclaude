@@ -1,0 +1,15 @@
+schema_version: "1.0"
+name: plan-two-envs-one-service
+execution:
+  max_turns: 30
+  allowed_tools: [Read, Glob, Grep, Write, Skill]
+  prompt: |
+    /cg-create-hotfix-tags https://github.com/CoverGo/policies/pull/1821
+
+    Target environments: CA-UAT and CA-PREPROD.
+
+    Offline fixtures stand in for the live systems: the k8s-saas checkout is at
+    test-fixtures/k8s-saas inside the cg-create-hotfix-tags skill
+    directory, and PR metadata is already resolved in test-fixtures/prs.json beside it (gh is
+    unavailable here, read that file instead). Write the plan to hotfix-tags.md in the
+    working directory and print the same table in your reply.

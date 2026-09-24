@@ -105,7 +105,7 @@ Return exactly this JSON, no prose around it:
 
 Tone for `reply`: clear, casual, polite, direct. Under 3 sentences. No
 over-apologizing, no corporate voice, no restating the comment back.
-- valid + will fix: "Good catch — <what changes>. Fixed in the next push."
+- valid + will fix: "Good catch — <what changes>. Fixed and pushed."
 - partly-valid: "<the part that's right> — <fix>. <the part that isn't> is intentional because <reason>."
 - invalid: lead with the fact that settles it, not with disagreement.
   e.g. "Express 5 does forward async errors — see package.json, we're on 5.1.
@@ -141,7 +141,7 @@ Then one block per thread. Fixed labels, one line each, hard cap as shown:
 🔍 Verified in code: index is (migration_id, environment, tenant, type) — this query matches a non-unique prefix
 🤖 Action: Reply + fix
 🛠️ Fix: src/registry/lock.js:42 — add `type` to the findOne filter
-💬 Reply: "Good catch — that query was matching a non-unique index prefix. Fixed in the next push."
+💬 Reply: "Good catch — that query was matching a non-unique index prefix. Fixed and pushed."
 ```
 
 Rules for the block:
@@ -176,21 +176,36 @@ ok, rest no`. They are approving *the proposed action as shown*, so:
 - **not mentioned** → skip and say which ones you skipped for lack of an answer. Silence is not consent for something that posts publicly.
 - **anything else** (a correction, "T2 ok but soften the reply", "T3 actually valid") → treat it as an instruction, revise, and re-show just that thread before acting.
 
-## Step 6: Fix, verify, then post — in that order
+## Step 6: Fix, verify, commit, push, then reply and resolve — in that order
 
-Order matters: a reply saying "fixed" must not go out before the fix exists.
+Order matters: a reply saying "fixed" must not go out before the commit is on
+the remote. Reviewers check the code before they read the reply.
 
 1. **Apply every approved fix.** Follow the repo's conventions and keep the diff to what the comment asked for — the reviewer flagged one thing, not an invitation to refactor.
-2. **Run the checks.** `npm test` or whatever the repo uses. If a fix breaks something, stop before posting anything and report it — you now have new information the user approved a plan without.
-3. **Post the replies:**
+2. **Run the checks.** `npm test` or whatever the repo uses. If a fix breaks something, stop here — nothing committed, nothing posted — and report it. The user approved a plan without this information.
+3. **Commit.** One commit for all the approved fixes, message written with the `cg-commit` standard (Jira code from the branch name + what changed). Never `--amend`, never rebase; the reviewer is reading incremental commits.
+4. **Push** to the PR's head branch:
+
+```bash
+git push origin "$(git branch --show-current)"
+```
+
+5. **Post each reply:**
 
 ```bash
 gh pr-review comments reply "$PR_URL" --thread-id "<thread_id>" --body "<reply>"
 ```
 
-4. **Report** — one line per thread: posted / fixed / skipped, plus the files touched.
+6. **Resolve each thread you replied to:**
 
-Leave the changes uncommitted and unpushed. The user reviews and pushes; that's
-why the replies say "in the next push" rather than "pushed". Don't resolve the
-threads either — the reviewer resolves them, and resolving your own is how a
-real objection gets buried.
+```bash
+gh pr-review threads resolve "$PR_URL" --thread-id "<thread_id>"
+```
+
+Resolve only threads the user approved. A thread they answered `no` on, or
+never answered, stays open and unreplied — that is someone else's call.
+
+7. **Report** — one line per thread: fixed / replied / resolved / skipped, plus the commit SHA and the files touched.
+
+Because the code is pushed before the replies go out, replies say "fixed in
+<sha>" or "fixed — pushed", never "in the next push".

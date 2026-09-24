@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eval report — cg-create-hotfix-tags</title>
+</head>
+<body>
+<style>
+:root{--plane:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--ink-3:#6b6a64;--hairline:rgba(11,11,11,.10);--grid:#e1e0d9;--inset:rgba(11,11,11,.04);--accent:#2a78d6;--base-fill:#6b6a64;--delta-good:#006300;--good:#067d06;--warning:#8a6100;--critical:#d03b3b;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){:root{--plane:#0d0d0d;--surface:#1a1a19;--ink:#ffffff;--ink-2:#c3c2b7;--ink-3:#898781;--hairline:rgba(255,255,255,.10);--grid:#2c2c2a;--inset:rgba(255,255,255,.05);--accent:#3987e5;--base-fill:#898781;--delta-good:#0ca30c;--good:#0ca30c;--warning:#fab219;--critical:#e06c6c;color-scheme:dark}}
+:root[data-theme="dark"]{--plane:#0d0d0d;--surface:#1a1a19;--ink:#ffffff;--ink-2:#c3c2b7;--ink-3:#898781;--hairline:rgba(255,255,255,.10);--grid:#2c2c2a;--inset:rgba(255,255,255,.05);--accent:#3987e5;--base-fill:#898781;--delta-good:#0ca30c;--good:#0ca30c;--warning:#fab219;--critical:#e06c6c;color-scheme:dark}
+:root[data-theme="light"]{--plane:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--ink-3:#6b6a64;--hairline:rgba(11,11,11,.10);--grid:#e1e0d9;--inset:rgba(11,11,11,.04);--accent:#2a78d6;--base-fill:#6b6a64;--delta-good:#006300;--good:#067d06;--warning:#8a6100;--critical:#d03b3b;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);
+  font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-text-size-adjust:100%}
+.wrap{max-width:880px;margin:0 auto;padding:40px 24px 64px;display:flex;flex-direction:column;gap:20px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+header h1{margin:2px 0 0;font-size:24px;font-weight:600;line-height:1.25;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;color:var(--ink-2);font-size:13px}
+.meta .num{font-variant-numeric:tabular-nums lining-nums}
+.banner{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;
+  border:1px solid var(--hairline);background:var(--surface);font-size:13px}
+.banner .chip-warn{color:var(--warning);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--hairline);border-radius:10px;padding:14px 16px;
+  display:flex;flex-direction:column;gap:4px}
+.tile .label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tile .value{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums lining-nums;line-height:1.1}
+.tile.hero .value{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:48px}
+.tile .sub{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.tile .value.delta-pos{color:var(--delta-good)}
+.tile .value.delta-neg{color:var(--critical)}
+.toolbar{display:flex;gap:8px;justify-content:flex-end}
+.toolbar button{font:12px system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink-2);
+  background:var(--surface);border:1px solid var(--hairline);border-radius:6px;padding:4px 10px;cursor:pointer}
+.toolbar button:hover{color:var(--ink)}
+.toolbar button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.case{background:var(--surface);border:1px solid var(--hairline);border-radius:10px;padding:18px 20px;
+  display:flex;flex-direction:column;gap:10px}
+.case-regressed{border-left:3px solid var(--critical)}
+.verdict{margin:6px 0 0;font-size:15px}
+.verdict .delta{font-size:15px}
+.flag{font-size:11px;font-weight:600;color:var(--warning);white-space:nowrap}
+.star{color:var(--warning);font-size:.45em;vertical-align:super;line-height:0;cursor:help}
+.legend summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.legend-list{margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--ink-2)}
+.case-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.case-head h2{margin:0;font-size:16px;font-weight:600}
+.case-head .spacer{flex:1}
+.case-score{font-size:15px;font-weight:600}
+.mono{font:12px "SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.num{font-variant-numeric:tabular-nums lining-nums}
+.muted{color:var(--ink-3);font-size:12px}
+.meter{display:inline-block;position:relative;width:120px;height:6px;border-radius:4px;background:var(--grid);
+  vertical-align:middle}
+.meter>span{display:block;height:100%;border-radius:4px;max-width:100%}
+.meter .tick{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink-3);border-radius:1px}
+.m-accent>span{background:var(--accent)}
+.m-base>span{background:var(--base-fill)}
+.delta{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.delta-pos{color:var(--delta-good)}
+.delta-neg{color:var(--critical)}
+.delta-zero{color:var(--ink-3)}
+details.section{border-top:1px solid var(--grid);padding-top:10px}
+details.section>summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--ink-2);list-style-position:outside;margin-left:2px}
+details.section>summary:hover{color:var(--ink)}
+details.section[open]>summary{margin-bottom:8px}
+.md{display:flex;flex-direction:column;gap:8px;background:var(--inset);border-radius:8px;
+  padding:12px 14px;overflow-wrap:break-word}
+.md>:first-child{margin-top:0}
+.md h1,.md h2,.md h3,.md h4,.md h5,.md h6{margin:4px 0 0;font-size:1em;font-weight:600;line-height:1.3}
+.md p,.md ul,.md ol,.md blockquote,.md table,.md pre,.md hr{margin:0}
+.md ul,.md ol{display:flex;flex-direction:column;gap:4px;padding-left:20px}
+.md blockquote{border-left:2px solid var(--hairline);padding-left:10px;color:var(--ink-2)}
+.md :not(pre)>code{background:var(--inset);padding:1px 4px;border-radius:4px;
+  font:.92em "SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.md pre{background:var(--inset);border:1px solid var(--hairline);padding:10px 12px;border-radius:6px;
+  overflow-x:auto;font:12px/1.5 "SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.md pre code{background:none;padding:0;font:inherit}
+.md table{width:100%;border-collapse:collapse}
+.md th,.md td{padding:5px 8px;text-align:left;vertical-align:top;border-bottom:1px solid var(--grid)}
+.md th{font-weight:600;color:var(--ink-2)}
+.md a{color:var(--accent);text-decoration:none}
+.md a:hover{text-decoration:underline}
+.grader-def{display:flex;flex-direction:column;gap:6px;padding:8px 0}
+.grader-def+.grader-def{border-top:1px solid var(--grid)}
+.grader-def-head{display:flex;align-items:baseline;gap:8px}
+.grader-name{font:13px "SF Mono",ui-monospace,Menlo,Consolas,monospace;font-weight:600}
+.badge{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);
+  border:1px solid var(--hairline);border-radius:999px;padding:1px 8px}
+.config{display:flex;flex-direction:column;gap:2px;background:var(--inset);border-radius:8px;padding:10px 14px}
+.config code{font:12px "SF Mono",ui-monospace,Menlo,Consolas,monospace;overflow-wrap:anywhere}
+.arm{display:flex;flex-direction:column;gap:8px;padding:6px 0}
+.arm+.arm{border-top:1px dashed var(--grid);margin-top:4px;padding-top:12px}
+.arm-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.arm-label{font-size:13px;font-weight:600}
+.run{border:1px solid var(--grid);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.run-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.run-title{font-size:12px;font-weight:600;color:var(--ink-2)}
+.run-error .explanation{color:var(--ink-2)}
+.note{font-size:12px;color:var(--ink-2)}
+.graders{display:flex;flex-direction:column;gap:4px}
+details.grader{border-radius:6px}
+details.grader>summary{cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:3px 4px;
+  border-radius:6px;list-style:none}
+details.grader>summary::-webkit-details-marker{display:none}
+details.grader>summary::before{content:'▸';font-size:10px;color:var(--ink-3);flex:none;
+  transition:transform .12s ease}
+details.grader[open]>summary::before{transform:rotate(90deg)}
+details.grader>summary:hover{background:var(--inset)}
+details.grader>summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.grader-body{padding:6px 8px 8px 24px;display:flex;flex-direction:column;gap:6px}
+.chip{font-size:11px;font-weight:600;border-radius:999px;padding:1px 8px;white-space:nowrap}
+.chip-pass{color:var(--good);border:1px solid currentColor}
+.chip-fail{color:var(--critical);border:1px solid currentColor}
+.chip.chip-warn{color:var(--warning);border:1px solid currentColor}
+.explanation{margin:0;font-size:13px;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:break-word}
+.kv{display:flex;gap:8px;font-size:12px;color:var(--ink-3)}
+.votes{font-variant-numeric:tabular-nums;letter-spacing:.1em}
+pre.evidence{margin:0;background:var(--inset);border:1px solid var(--hairline);border-radius:6px;
+  padding:8px 10px;overflow-x:auto;max-height:320px;
+  font:12px/1.5 "SF Mono",ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:break-word}
+footer{color:var(--ink-3);font-size:12px;text-align:center;padding-top:8px}
+@media (prefers-reduced-motion:no-preference){
+  details.grader>summary,.toolbar button{transition:background .12s ease,color .12s ease}
+}
+@media (prefers-reduced-motion:reduce){
+  details.grader>summary::before{transition:none}
+}
+@media print{
+  :root,:root[data-theme="dark"],:root[data-theme="light"]{--plane:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--ink-3:#6b6a64;--hairline:rgba(11,11,11,.10);--grid:#e1e0d9;--inset:rgba(11,11,11,.04);--accent:#2a78d6;--base-fill:#6b6a64;--delta-good:#006300;--good:#067d06;--warning:#8a6100;--critical:#d03b3b;color-scheme:light}
+  body{background:#fff}
+  .toolbar{display:none}
+  .case,.run,.grader-def{break-inside:avoid}
+  pre.evidence{max-height:none}
+}
+</style>
+<div class="wrap">
+<header>
+<div class="eyebrow">Plugin eval report</div>
+<h1>cg-create-hotfix-tags</h1>
+<p class="verdict">Plugin effect: <span class="delta delta-pos">↑ +76.9 pts</span> vs baseline — improved 1 · flat 0 · regressed 0 of 1 case.</p>
+<div class="meta">
+<span class="mono">.</span>
+<span>Claude Code v2.1.278</span>
+<span class="num">2026-09-19 16:42 UTC</span>
+<span class="num">3m 21s</span>
+<span class="num">$2.45</span>
+<span class="num">6 runs</span>
+<span class="num">3 in flight</span>
+
+
+<span>judge default</span>
+<span class="num">threshold 100%</span>
+<span>filtered: --case frontend-monorepo*</span>
+</div>
+</header>
+
+<section class="tiles">
+<div class="tile hero"><span class="label">Suite score · with plugin</span><span class="value">100%</span><span class="sub">mean of per-case scores</span></div>
+<div class="tile"><span class="label">Ablation Δ</span><span class="value num delta-pos">↑ +76.9</span><span class="sub">score points vs baseline, 1 of 1 case</span></div>
+<div class="tile"><span class="label">Baseline score</span><span class="value num">23.1%</span><span class="sub">without the plugin</span></div>
+<div class="tile"><span class="label">Cases</span><span class="value num">1</span><span class="sub">1 of 1 ≥ 100% threshold</span></div>
+<div class="tile"><span class="label">Perfect runs</span><span class="value num">100%</span><span class="sub">runs where every grader passed</span></div>
+</section>
+<details class="section legend">
+<summary>How to read this report</summary>
+<ul class="legend-list">
+<li>A run's score is the weighted fraction of its graders that passed; a "perfect" run passed every grader.</li>
+<li>A case's score is the mean of its runs; a case passes when its score is at or above the 100% threshold (the tick on each case bar).</li>
+<li>The suite score is the mean of the per-case scores.</li>
+<li>Judge votes are independent samples of the LLM judge; the majority decides pass or fail.</li>
+<li>"With plugin" and "Baseline" runs are identical except for the plugin being loaded; Δ is the with-plugin score minus the baseline score.</li>
+
+</ul>
+</details>
+<div class="toolbar"><button type="button" data-act="expand">Expand all</button><button type="button" data-act="collapse">Collapse all</button></div>
+<article class="case" id="case-1">
+<div class="case-head">
+<h2>frontend-monorepo-routing</h2>
+<span class="muted mono">evals/frontend-monorepo-routing</span>
+<span class="spacer"></span>
+
+<span class="delta delta-pos">↑ +76.9 pts</span>
+<span class="muted">with plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span><i class="tick" style="left:100.0%"></i></span>
+<span class="num case-score">100%</span>
+</div>
+
+<details class="section" open>
+<summary>Results</summary>
+<section class="arm">
+<div class="arm-head">
+<span class="arm-label">With plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">100% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">13 turns · $0.34 · 16:42:51 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">fans-out-to-both-apps</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">matched (?=[\s\S]*coverhealth-admin)[\s\S]*coverhealth-broker</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">monorepo-branch-asked</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">Phase A only — nothing pushed. Plan written to `hotfix-tags.md`:
+
+| env | service | repo | kind | deployed | new tag | branch | cherry-picks | status |
+|---|---|---|---|---|---|---|---|---|
+| CA-UAT | coverhealth-broker | CoverGo/frontend-monorepo | frontend | 2.294.2-cauat1.16 | v2.294.2-cauat1.17 | ASK USER | f00dcafe | planned |
+
+PR #994 is merged (`f00dcafe`, &quot;CH-44310 fix broker quote totals&quot;), so I took **CH-44310** as the Jira ticket — confirm that&apos;s right.
+
+Three things need your answer before phase B:
+
+1. **Release branch.** `frontend-monorepo` has its own branch process, so I did *not* derive `release/v2-294-2-cauat1-17`. Tell me the branch to cut from.
+2. **Tag number unverified.** `gh` is unavailable, so I couldn&apos;t list existing tags. `cauat1.17` is computed from the deployed `2.294.2-cauat1.16` alone — if a higher `cauat` tag on core `2.294.2` exists, the real next tag is above this.
+3. **`coverhealth-admin` is at the same version.** CA-UAT has a second frontend overlay from this same repo (`coverhealth-admin-monorepo`, also `2.294.2-cauat1.16`). #994 is a broker fix so I only planned the broker row — say the word if admin should be rebuilt too.
+
+One caveat on method: this session has no shell, so I read the manifest directly and applied `next_tag.py`&apos;s rules by hand rather than running the two scripts. Worth re-running both to confirm before cutting.</pre>
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">next-fe-tag</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">matched v2\.294\.2-cauat1\.17</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">no-dotted-fe-branch</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">pattern absent as expected</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">plan-file-written</span>  </summary>
+<div class="grader-body">
+<p class="explanation">hotfix-tags.md exists as expected</p>
+
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 2</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">12 turns · $0.34 · 16:42:51 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">fans-out-to-both-apps</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">matched (?=[\s\S]*coverhealth-admin)[\s\S]*coverhealth-broker</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">monorepo-branch-asked</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">**Phase A plan — nothing pushed.** Written to `hotfix-tags.md`:
+
+```
+jira: [CH-44310]   source_prs: [CoverGo/frontend-monorepo#994]
+```
+
+| env | service | repo | kind | deployed | new tag | branch | cherry-picks | status |
+|---|---|---|---|---|---|---|---|---|
+| CA-UAT | coverhealth-broker | CoverGo/frontend-monorepo | frontend | 2.294.2-cauat1.16 | v2.294.2-cauat1.17 | TBD — needs your input | f00dcafe | planned |
+
+PR #994 is `MERGED`, title `CH-44310 fix broker quote totals` — I took the Jira code from there; confirm it&apos;s right.
+
+Three things need you before phase B:
+
+1. **Branch.** `frontend-monorepo` has its own release-branch process, so the skill does not derive one. The mechanical frontend form would be `release/v2-294-2-cauat1-17`, but I&apos;m not assuming it — what branch should this go on?
+2. **Channel tags unverified.** `gh` is unavailable, so I seeded the `cauat` channel from the deployed tag alone (`1.16` → `1.17`). If `v2.294.2-cauat1.17` already exists undeployed, the tag is wrong.
+3. **Two CA-UAT apps come out of this monorepo.** `coverhealth-broker` and `coverhealth-admin` are both pinned at `2.294.2-cauat1.16`. One tag rebuilds both images, so it&apos;s one release row — but if only the broker overlay is bumped, admin drifts. Bump both overlays or just broker?
+
+Confirm the branch and I&apos;ll cut the release branch, cherry-pick `f00dcafe`, check it&apos;s an ancestor of `origin/main`, and publish with `--latest=false`.</pre>
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">next-fe-tag</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">matched v2\.294\.2-cauat1\.17</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">no-dotted-fe-branch</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">pattern absent as expected</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">plan-file-written</span>  </summary>
+<div class="grader-body">
+<p class="explanation">hotfix-tags.md exists as expected</p>
+
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 3</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">13 turns · $0.37 · 16:42:51 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">fans-out-to-both-apps</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">matched (?=[\s\S]*coverhealth-admin)[\s\S]*coverhealth-broker</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">monorepo-branch-asked</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS FAIL PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✗ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">Phase A only — nothing pushed. Plan written to `hotfix-tags.md`:
+
+| env | service | repo | kind | deployed | new tag | branch | cherry-picks | status |
+|---|---|---|---|---|---|---|---|---|
+| CA-UAT | coverhealth-broker | CoverGo/frontend-monorepo | frontend | 2.294.2-cauat1.16 | v2.294.2-cauat1.17 | ASK — frontend-monorepo uses its own branch process | f00dcafe | planned |
+
+PR 994 is merged (`f00dcafe`, &quot;CH-44310 fix broker quote totals&quot;), so I took **CH-44310** as the Jira ticket rather than asking.
+
+Three things to settle before I cut anything:
+
+1. **Release branch — this is the blocker.** `frontend-monorepo` doesn&apos;t use the `release/&lt;tag&gt;` convention the skill derives for other repos, so I won&apos;t invent one. The derived form would be `release/v2-294-2-cauat1-17` (frontend rule: dots → dashes, never the dotted backend form). Confirm that or tell me the real branch.
+2. **The tag number is computed from the deployed tag alone.** `gh` is unavailable, so I couldn&apos;t list the repo&apos;s existing tags. I seeded `next_tag.py` with `2.294.2-cauat1.16` → `v2.294.2-cauat1.17`. If a `cauat` tag above 1.16 was cut but not yet deployed, the real next tag is higher. Worth a `git tag -l &apos;v2.294.2-cauat*&apos;` before pushing.
+3. **`coverhealth-admin` sits on the same `2.294.2-cauat1.16`**, built from the same monorepo. If one release tag builds both images, admin gets dragged to 1.17 by this hotfix. I left it out of the plan since your report is broker-only — say if it should be a row.
+
+Also note I traced `deployed_tag.py` and `next_tag.py` by hand rather than executing them (no shell access in this session); the routing and channel arithmetic match the scripts&apos; logic, but they weren&apos;t run.
+
+Give me the branch name and I&apos;ll run phase B: branch from `v2.294.2-cauat1.16`, cherry-pick `f00dcafe`, verify it&apos;s an ancestor of `origin/main`, push, and publish the release with `--latest=false`.</pre>
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">next-fe-tag</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">matched v2\.294\.2-cauat1\.17</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">no-dotted-fe-branch</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">pattern absent as expected</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">plan-file-written</span>  </summary>
+<div class="grader-body">
+<p class="explanation">hotfix-tags.md exists as expected</p>
+
+</div>
+</details></div>
+</div>
+</section><section class="arm">
+<div class="arm-head">
+<span class="arm-label">Baseline (no plugin)</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:23.1%"></span></span>
+<span class="num">23.1%</span>
+<span class="muted num">0% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:23.1%"></span></span>
+<span class="num">23.1%</span>
+<span class="muted num">19 turns · $0.32 · 16:43:46 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">fans-out-to-both-apps</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">pattern not found in last_message</p>
+
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">monorepo-branch-asked</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I can&apos;t get to the inputs — stopping before I guess at anything.
+
+**What I found**
+
+- The `cg-create-hotfix-tags` skill is not registered in this session. `Skill(cg-create-hotfix-tags)` returns `Unknown skill`, and it&apos;s absent from the available-skills list.
+- I can&apos;t locate its directory (and therefore `test-fixtures/k8s-saas` or `test-fixtures/prs-frontend-monorepo.json`) by search:
+  - `/private/tmp/e-Pidp53/home/cwd` — empty.
+  - `/private/tmp/e-Pidp53/home` — only `.gitconfig` and `.git/`.
+  - `/private/tmp/e-Pidp53/config/**` — Glob and Grep both hard-denied (&quot;Permission to read ... denied&quot;).
+  - `/private/tmp/e-Pidp53` and siblings like `plugins/`, `skills/` — denied by don&apos;t-ask mode.
+- I also have no Bash tool in this session, so I can&apos;t `ls` around the denials, and I couldn&apos;t run `git`/`kubectl` steps even once I had the files.
+
+**What I need from you** (any one of these unblocks me)
+
+1. The absolute path to the `cg-create-hotfix-tags` skill directory, plus read permission for that path — then I can read `SKILL.md`, walk the k8s-saas checkout, and read the PR fixture.
+2. Or: enable the skill so `Skill` can invoke it.
+3. Or: paste the contents of `test-fixtures/prs-frontend-monorepo.json` and tell me where the CA-UAT image tags live in the k8s-saas tree, and I&apos;ll work from that.
+
+I&apos;d rather ask than produce a hotfix-tag table from assumptions — wrong tags on a UAT environment are the kind of thing that&apos;s annoying to unwind. Nothing has been written to `hotfix-tags.md` yet.</pre>
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">next-fe-tag</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">pattern not found in last_message</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">no-dotted-fe-branch</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">pattern absent as expected</p>
+
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">plan-file-written</span>  </summary>
+<div class="grader-body">
+<p class="explanation">hotfix-tags.md missing (expected present)</p>
+
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 2</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:23.1%"></span></span>
+<span class="num">23.1%</span>
+<span class="muted num">25 turns · $0.44 · 16:43:51 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">fans-out-to-both-apps</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">pattern not found in last_message</p>
+
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">monorepo-branch-asked</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I couldn&apos;t get to the fixtures — I&apos;m blocked by permissions, so I&apos;ve written nothing and have no table to show yet. Here&apos;s exactly where it stands.
+
+**What I tried**
+
+| Path | Result |
+|---|---|
+| `Skill(cg-create-hotfix-tags)` | `Unknown skill` — not registered in this session |
+| `/private/tmp/e-cEQCjr/home/cwd/**` | empty (no files at all) |
+| `/private/tmp/e-cEQCjr/home/**` | only `.gitconfig` + `.git/` — no skill dir, no `test-fixtures/` |
+| `/private/tmp/e-cEQCjr/config/**` (incl. `config/skills/…`, `config/plugins/…`) | &quot;denied by your permission settings&quot; — explicit deny rule on the whole tree |
+| `/private/tmp`, `/private/tmp/e-cEQCjr` (Glob search for the skill dir) | denied — don&apos;t-ask mode |
+
+I also checked for a shell/list tool to locate the directory another way; there is no Bash tool in this session, and the only deferred tools are `NotebookEdit` and `TaskStop`.
+
+So I can&apos;t read `test-fixtures/k8s-saas` (to see the current CA-UAT image tags and chart values) or `test-fixtures/prs-frontend-monorepo.json` (to resolve PR #994 → merge commit, affected apps, and the base tags to bump). Both are required inputs — I&apos;m not going to guess at tags for a UAT deploy.
+
+**To unblock, any one of these works:**
+
+1. Tell me the absolute path of the `cg-create-hotfix-tags` skill directory and grant `Read`/`Glob` on it (most likely it&apos;s under `/private/tmp/e-cEQCjr/config/...`, which currently has a blanket deny).
+2. Copy the skill directory (or just `test-fixtures/`) into `/private/tmp/e-cEQCjr/home/cwd/` — that root is readable and writable.
+3. Re-run with the skill actually registered so `Skill` can load it, since its `SKILL.md` presumably carries the tag-naming and ordering rules I should follow rather than invent.
+
+Once I can read those two fixtures, I&apos;ll produce the hotfix tag plan, write it to `hotfix-tags.md` in the working directory, and print the same table here.</pre>
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">next-fe-tag</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">pattern not found in last_message</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">no-dotted-fe-branch</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">pattern absent as expected</p>
+
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">plan-file-written</span>  </summary>
+<div class="grader-body">
+<p class="explanation">hotfix-tags.md missing (expected present)</p>
+
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 3</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:23.1%"></span></span>
+<span class="num">23.1%</span>
+<span class="muted num">26 turns · $0.65 · 16:43:51 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">fans-out-to-both-apps</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">pattern not found in last_message</p>
+
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">monorepo-branch-asked</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I&apos;m blocked before I can start — I can&apos;t locate the `cg-create-hotfix-tags` skill directory, and this environment gives me no way to search for it.
+
+**What&apos;s available to me:** `Read` (exact paths only, and only under `/private/tmp/e-KlzkyQ/home/`), `Write`, `Edit`. `Glob`, `Grep`, and directory reads are all permission-denied (&quot;don&apos;t ask mode&quot;), and there is no `Bash` tool at all — not even as a deferred tool. So `find`/`ls`/`ls -R` aren&apos;t options either.
+
+**What I tried:**
+- `Skill` with `cg-create-hotfix-tags` → `Unknown skill` (it isn&apos;t in the registered skill list, so it isn&apos;t in an auto-discovered skill root).
+- Blind path probes of every standard skill/plugin location under `home/` and `home/cwd/` (`.claude/skills/…`, `skills/…`, `.claude/plugins/…`, `.config/claude/skills/…`) → all &quot;File does not exist&quot;.
+- `/private/tmp/e-KlzkyQ/config/skills/…` → explicitly denied by permission settings; `/private/tmp/e-KlzkyQ/skills/…` and `/private/tmp/e-KlzkyQ/plugins/…` → denied (outside the allowed root).
+- A subagent sweep, in case it had broader permissions — it hit the identical denials.
+
+I stopped rather than keep guessing paths, and I have not written `hotfix-tags.md`: every input to that plan (the k8s-saas manifests and the PR metadata) lives in the directory I can&apos;t reach, and a plan for promoting a broker-quote fix to CA-UAT is not something worth inventing.
+
+**To unblock, any one of these is enough:**
+1. Tell me the absolute path to `cg-create-hotfix-tags` — I can read files under it by exact path, including `test-fixtures/prs-frontend-monorepo.json`. I&apos;d also need the paths (or a listing) of the relevant files under `test-fixtures/k8s-saas`, since I can&apos;t enumerate that tree either.
+2. Allow `Glob` (one call with `**/cg-create-hotfix-tags/**` resolves it) or `Grep`.
+3. Allow `Bash` for read-only `find`/`ls`.
+
+Option 2 is the cleanest — with `Glob` enabled I can do the whole task in one pass without further back-and-forth.</pre>
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">next-fe-tag</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">pattern not found in last_message</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">no-dotted-fe-branch</span> <span class="muted">×3</span> </summary>
+<div class="grader-body">
+<p class="explanation">pattern absent as expected</p>
+
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">plan-file-written</span>  </summary>
+<div class="grader-body">
+<p class="explanation">hotfix-tags.md missing (expected present)</p>
+
+</div>
+</details></div>
+</div>
+</section>
+</details>
+<details class="section" open>
+<summary>Prompt</summary>
+<div class="md"><p>broker quote totals are wrong on CA-UAT — <a href="https://github.com/CoverGo/frontend-monorepo/pull/994" rel="noopener">https://github.com/CoverGo/frontend-monorepo/pull/994</a>
+is merged, get it onto CA-UAT.</p>
+<p>Offline fixtures stand in for the live systems: the k8s-saas checkout is at
+test-fixtures/k8s-saas inside the cg-create-hotfix-tags skill directory, and PR metadata is
+already resolved in test-fixtures/prs-frontend-monorepo.json beside it (gh is unavailable
+here, read that file instead). Write the plan to hotfix-tags.md in the working directory and
+print the same table in your reply.</p>
+</div>
+</details>
+<details class="section" open>
+<summary>Graders — what "good" means for this case</summary>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">fans-out-to-both-apps</span><span class="badge">regex</span><span class="muted">weight ×3</span></div>
+<div class="config"><div class="kv"><span>target</span><code>&quot;last_message&quot;</code></div><div class="kv"><span>pattern</span><code>&quot;(?=[\\s\\S]*coverhealth-admin)[\\s\\S]*coverhealth-broker&quot;</code></div><div class="kv"><span>flags</span><code>&quot;&quot;</code></div><div class="kv"><span>match</span><code>&quot;contains&quot;</code></div></div>
+</div>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">monorepo-branch-asked</span><span class="badge">llm</span><span class="muted">weight ×3</span></div>
+<div class="md"><p>The reply says the frontend-monorepo follows its own release-branch process and asks the user
+which release branch to use, instead of inventing one. It still shows the computed hotfix tag
+and covers both CA-UAT monorepo apps (coverhealth-admin and coverhealth-broker). Nothing is
+described as pushed, tagged or released.</p>
+</div>
+</div>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">next-fe-tag</span><span class="badge">regex</span><span class="muted">weight ×3</span></div>
+<div class="config"><div class="kv"><span>target</span><code>&quot;last_message&quot;</code></div><div class="kv"><span>pattern</span><code>&quot;v2\\.294\\.2-cauat1\\.17&quot;</code></div><div class="kv"><span>flags</span><code>&quot;&quot;</code></div><div class="kv"><span>match</span><code>&quot;contains&quot;</code></div></div>
+</div>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">no-dotted-fe-branch</span><span class="badge">regex</span><span class="muted">weight ×3</span></div>
+<div class="config"><div class="kv"><span>target</span><code>&quot;last_message&quot;</code></div><div class="kv"><span>pattern</span><code>&quot;release/v2\\.294\\.2-cauat1[.-]17&quot;</code></div><div class="kv"><span>flags</span><code>&quot;&quot;</code></div><div class="kv"><span>match</span><code>&quot;not_contains&quot;</code></div></div>
+</div>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">plan-file-written</span><span class="badge">file_exists</span></div>
+<div class="config"><div class="kv"><span>path</span><code>&quot;hotfix-tags.md&quot;</code></div><div class="kv"><span>exists</span><code>true</code></div></div>
+</div>
+</details>
+</article>
+<footer>Generated by <code>claude plugin eval</code> · schema v1 · scores are not comparable across different suites</footer>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var bar=document.querySelector('.toolbar');
+  if(!bar)return;
+  bar.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest('button');
+    if(!b)return;
+    var open=b.dataset.act==='expand';
+    document.querySelectorAll('details.section, details.grader').forEach(function(d){d.open=open});
+  });
+});
+// Collapsed details vanish from print/PDF; these pages are share artifacts.
+window.addEventListener('beforeprint',function(){
+  document.querySelectorAll('details').forEach(function(d){
+    if(!d.open){d.dataset.printOpened='1';d.open=true}
+  });
+});
+window.addEventListener('afterprint',function(){
+  document.querySelectorAll('details[data-print-opened]').forEach(function(d){
+    d.open=false;delete d.dataset.printOpened;
+  });
+});
+</script>
+</body>
+</html>

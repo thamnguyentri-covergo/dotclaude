@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.278",
+  "startedAt": "2026-09-19T15:58:16.257Z",
+  "durationSeconds": 48,
+  "costUsd": 0.24587349999999997,
+  "partial": false,
+  "suite": {
+    "root": "/Users/thamnguyen-covergo/dotclaude/.claude/skills/cg-create-hotfix-tags",
+    "ablation": "none",
+    "caseFilter": "plan-two-envs*",
+    "threshold": 1,
+    "concurrency": 1,
+    "plugins": [
+      {
+        "name": "cg-create-hotfix-tags",
+        "path": "/Users/thamnguyen-covergo/dotclaude/.claude/skills/cg-create-hotfix-tags"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "plan-two-envs-one-service",
+      "dir": "evals/plan-two-envs-one-service",
+      "source": "mixed",
+      "promptMarkdown": "this one's merged and needs to go out: https://github.com/CoverGo/policies/pull/1821 —\nwe want it on CA-UAT and CA-PREPROD.\n\nThe k8s-saas checkout is at ./fixture/k8s-saas. PR metadata is already resolved in\n./fixture/prs.json (gh is unavailable here, use that file). Write the plan to hotfix-tags.md.\n",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 30,
+      "graders": [
+        {
+          "name": "capreprod-starts-channel",
+          "type": "regex",
+          "weight": 3,
+          "config": {
+            "target": "last_message",
+            "pattern": "v2\\.381\\.4-capreprod1\\.0",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "cauat-bumps-y",
+          "type": "regex",
+          "weight": 3,
+          "config": {
+            "target": "last_message",
+            "pattern": "v2\\.382\\.9-cauat1\\.2",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "plan-file-written",
+          "type": "file_exists",
+          "weight": 2,
+          "config": {
+            "path": "hotfix-tags.md",
+            "exists": true
+          }
+        },
+        {
+          "name": "rows-stay-planned",
+          "type": "regex",
+          "weight": 2,
+          "config": {
+            "target": "last_message",
+            "pattern": "\\b(pushed|built|git push|gh release create)\\b",
+            "flags": "i",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill"
+          }
+        },
+        {
+          "name": "table-is-reviewable",
+          "type": "llm",
+          "weight": 2,
+          "graderMarkdown": "hotfix-tags.md holds one row per environment for the policies service. Each row names the\ndeployed tag, the new tag, a release branch derived from the new tag, the cherry-pick SHA\na1b2c3d4, and status `planned`. The response also asks the user to confirm before anything\nis pushed. It does not claim any branch, tag or release was created.",
+          "config": {
+            "criteria": "hotfix-tags.md holds one row per environment for the policies service. Each row names the\ndeployed tag, the new tag, a release branch derived from the new tag, the cherry-pick SHA\na1b2c3d4, and status `planned`. The response also asks the user to confirm before anything\nis pushed. It does not claim any branch, tag or release was created.",
+            "focus": "last_message"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 0.46153846153846156,
+            "passed": false,
+            "turns": 15,
+            "costUsd": 0.24587349999999997,
+            "judgeCostUsd": 0.002817,
+            "durationSeconds": 48,
+            "startedAt": "2026-09-19T15:58:16.269Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-Ncaqju/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "capreprod-starts-channel",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "cauat-bumps-y",
+                "passed": true,
+                "weight": 3,
+                "explanation": "matched v2\\.382\\.9-cauat1\\.2",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "plan-file-written",
+                "passed": false,
+                "weight": 2,
+                "explanation": "hotfix-tags.md missing (expected present)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "rows-stay-planned",
+                "passed": true,
+                "weight": 2,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "table-is-reviewable",
+                "passed": false,
+                "weight": 2,
+                "explanation": "judge votes: FAIL FAIL FAIL",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  false,
+                  false,
+                  false
+                ],
+                "evidence": "I stopped before writing `hotfix-tags.md` — I can't produce a truthful plan in this environment. Two blockers:\n\n**1. The fixture files aren't there.** Neither path exists:\n- `./fixture/prs.json` — not found\n- `./fixture/k8s-saas` — not found\n\n`/private/tmp/e-Ncaqju/home/cwd` reads as empty, and there's no `prs.json` or `fixture/` anywhere under it or the parent `home/`. (A glob one level up at `/private/tmp/e-Ncaqju` was blocked by the permission mode, so I can't rule out the checkout sitting somewhere outside the working directory.)\n\n**2. There's no Bash tool in this session.** Even with the fixtures present, phase A of the hotfix skill is entirely shell work that I have no way to run:\n- `python3 scripts/deployed_tag.py <k8s-saas-root> CA-UAT policies backend` — reads the version actually deployed\n- `python3 scripts/next_tag.py CA-UAT <deployed-tag> <existing-channel-tags...>` — computes `v2.382.9-cauat1.2`-style tags\n- `git` / `gh` for merge SHAs, existing tags, and phase B\n\nI'm not going to hand-write the table from the PR link alone. Every column that matters — the currently deployed tag per environment, the next free number in the `cauat` and `capreprod` channels, the merge commit to cherry-pick — has to be read from the manifests and the tag list. Inventing them produces a file that looks reviewable and routes a wrong image at a real environment, and `cg-create-hotfix-issues` would consume it downstream as if it were resolved.\n\n**To unblock, pick either:**\n- **Give me the real paths + Bash.** If the checkout is elsewhere (e.g. one level up at `/private/tmp/e-Ncaqju/fixture`), tell me where and approve Glob there, plus enable Bash so I can run the two scripts.\n- **Paste the inputs directly** and I'll do the computation and write the file: for `CoverGo/policies#1821` I need the merge commit SHA and whether it's merged; for each of CA-UAT and CA-PREPROD the currently deployed `policies` tag; and the existing `policies` tags matching `*-cauat*` and `*-capreprod*` so the channel counter starts in the right place. I'd still mark those rows as derived-from-pasted-input rather than script-verified.\n\nOne thing I can confirm from the skill's routing table without any of the above: both targets resolve to the `backend` overlay — CA-UAT at `datacenters/aws/ca-central-1/uat/backend`, CA-PREPROD at `datacenters/aws/ca-central-1/preprod/backend` — with channel suffixes `cauat` and `capreprod`. Also worth flagging for when we get to phase B: these are two independent channels, so the PR gets cherry-picked onto each separately, and CA-PREPROD does not inherit the CA-UAT tag."
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 0.46153846153846156,
+        "passRate": 0
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 0,
+    "overallScore": 0.46153846153846156,
+    "overallPassRate": 0
+  }
+}

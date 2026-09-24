@@ -1,0 +1,466 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.278",
+  "startedAt": "2026-09-19T16:42:51.631Z",
+  "durationSeconds": 201,
+  "costUsd": 2.4482809999999997,
+  "partial": false,
+  "suite": {
+    "root": "/Users/thamnguyen-covergo/dotclaude/.claude/skills/cg-create-hotfix-tags",
+    "ablation": "with-without",
+    "caseFilter": "frontend-monorepo*",
+    "threshold": 1,
+    "concurrency": 3,
+    "plugins": [
+      {
+        "name": "cg-create-hotfix-tags",
+        "path": "/Users/thamnguyen-covergo/dotclaude/.claude/skills/cg-create-hotfix-tags"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "frontend-monorepo-routing",
+      "dir": "evals/frontend-monorepo-routing",
+      "source": "mixed",
+      "promptMarkdown": "broker quote totals are wrong on CA-UAT — https://github.com/CoverGo/frontend-monorepo/pull/994\nis merged, get it onto CA-UAT.\n\nOffline fixtures stand in for the live systems: the k8s-saas checkout is at\ntest-fixtures/k8s-saas inside the cg-create-hotfix-tags skill directory, and PR metadata is\nalready resolved in test-fixtures/prs-frontend-monorepo.json beside it (gh is unavailable\nhere, read that file instead). Write the plan to hotfix-tags.md in the working directory and\nprint the same table in your reply.\n",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 30,
+      "graders": [
+        {
+          "name": "fans-out-to-both-apps",
+          "type": "regex",
+          "weight": 3,
+          "config": {
+            "target": "last_message",
+            "pattern": "(?=[\\s\\S]*coverhealth-admin)[\\s\\S]*coverhealth-broker",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "monorepo-branch-asked",
+          "type": "llm",
+          "weight": 3,
+          "graderMarkdown": "The reply says the frontend-monorepo follows its own release-branch process and asks the user\nwhich release branch to use, instead of inventing one. It still shows the computed hotfix tag\nand covers both CA-UAT monorepo apps (coverhealth-admin and coverhealth-broker). Nothing is\ndescribed as pushed, tagged or released.",
+          "config": {
+            "criteria": "The reply says the frontend-monorepo follows its own release-branch process and asks the user\nwhich release branch to use, instead of inventing one. It still shows the computed hotfix tag\nand covers both CA-UAT monorepo apps (coverhealth-admin and coverhealth-broker). Nothing is\ndescribed as pushed, tagged or released.",
+            "focus": "last_message"
+          }
+        },
+        {
+          "name": "next-fe-tag",
+          "type": "regex",
+          "weight": 3,
+          "config": {
+            "target": "last_message",
+            "pattern": "v2\\.294\\.2-cauat1\\.17",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "no-dotted-fe-branch",
+          "type": "regex",
+          "weight": 3,
+          "config": {
+            "target": "last_message",
+            "pattern": "release/v2\\.294\\.2-cauat1[.-]17",
+            "flags": "",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "plan-file-written",
+          "type": "file_exists",
+          "weight": 1,
+          "config": {
+            "path": "hotfix-tags.md",
+            "exists": true
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 13,
+            "costUsd": 0.335207,
+            "judgeCostUsd": 0.002262,
+            "durationSeconds": 55,
+            "startedAt": "2026-09-19T16:42:51.650Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-EpdbUv/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "fans-out-to-both-apps",
+                "passed": true,
+                "weight": 3,
+                "explanation": "matched (?=[\\s\\S]*coverhealth-admin)[\\s\\S]*coverhealth-broker",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "monorepo-branch-asked",
+                "passed": true,
+                "weight": 3,
+                "explanation": "judge votes: PASS PASS FAIL",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  true,
+                  true,
+                  false
+                ],
+                "evidence": "Phase A only — nothing pushed. Plan written to `hotfix-tags.md`:\n\n| env | service | repo | kind | deployed | new tag | branch | cherry-picks | status |\n|---|---|---|---|---|---|---|---|---|\n| CA-UAT | coverhealth-broker | CoverGo/frontend-monorepo | frontend | 2.294.2-cauat1.16 | v2.294.2-cauat1.17 | ASK USER | f00dcafe | planned |\n\nPR #994 is merged (`f00dcafe`, \"CH-44310 fix broker quote totals\"), so I took **CH-44310** as the Jira ticket — confirm that's right.\n\nThree things need your answer before phase B:\n\n1. **Release branch.** `frontend-monorepo` has its own branch process, so I did *not* derive `release/v2-294-2-cauat1-17`. Tell me the branch to cut from.\n2. **Tag number unverified.** `gh` is unavailable, so I couldn't list existing tags. `cauat1.17` is computed from the deployed `2.294.2-cauat1.16` alone — if a higher `cauat` tag on core `2.294.2` exists, the real next tag is above this.\n3. **`coverhealth-admin` is at the same version.** CA-UAT has a second frontend overlay from this same repo (`coverhealth-admin-monorepo`, also `2.294.2-cauat1.16`). #994 is a broker fix so I only planned the broker row — say the word if admin should be rebuilt too.\n\nOne caveat on method: this session has no shell, so I read the manifest directly and applied `next_tag.py`'s rules by hand rather than running the two scripts. Worth re-running both to confirm before cutting."
+              },
+              {
+                "name": "next-fe-tag",
+                "passed": true,
+                "weight": 3,
+                "explanation": "matched v2\\.294\\.2-cauat1\\.17",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "no-dotted-fe-branch",
+                "passed": true,
+                "weight": 3,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "plan-file-written",
+                "passed": true,
+                "weight": 1,
+                "explanation": "hotfix-tags.md exists as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 12,
+            "costUsd": 0.33809449999999996,
+            "judgeCostUsd": 0.003962,
+            "durationSeconds": 60,
+            "startedAt": "2026-09-19T16:42:51.650Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-A2CJPN/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "fans-out-to-both-apps",
+                "passed": true,
+                "weight": 3,
+                "explanation": "matched (?=[\\s\\S]*coverhealth-admin)[\\s\\S]*coverhealth-broker",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "monorepo-branch-asked",
+                "passed": true,
+                "weight": 3,
+                "explanation": "judge votes: PASS PASS PASS",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  true,
+                  true,
+                  true
+                ],
+                "evidence": "**Phase A plan — nothing pushed.** Written to `hotfix-tags.md`:\n\n```\njira: [CH-44310]   source_prs: [CoverGo/frontend-monorepo#994]\n```\n\n| env | service | repo | kind | deployed | new tag | branch | cherry-picks | status |\n|---|---|---|---|---|---|---|---|---|\n| CA-UAT | coverhealth-broker | CoverGo/frontend-monorepo | frontend | 2.294.2-cauat1.16 | v2.294.2-cauat1.17 | TBD — needs your input | f00dcafe | planned |\n\nPR #994 is `MERGED`, title `CH-44310 fix broker quote totals` — I took the Jira code from there; confirm it's right.\n\nThree things need you before phase B:\n\n1. **Branch.** `frontend-monorepo` has its own release-branch process, so the skill does not derive one. The mechanical frontend form would be `release/v2-294-2-cauat1-17`, but I'm not assuming it — what branch should this go on?\n2. **Channel tags unverified.** `gh` is unavailable, so I seeded the `cauat` channel from the deployed tag alone (`1.16` → `1.17`). If `v2.294.2-cauat1.17` already exists undeployed, the tag is wrong.\n3. **Two CA-UAT apps come out of this monorepo.** `coverhealth-broker` and `coverhealth-admin` are both pinned at `2.294.2-cauat1.16`. One tag rebuilds both images, so it's one release row — but if only the broker overlay is bumped, admin drifts. Bump both overlays or just broker?\n\nConfirm the branch and I'll cut the release branch, cherry-pick `f00dcafe`, check it's an ancestor of `origin/main`, and publish with `--latest=false`."
+              },
+              {
+                "name": "next-fe-tag",
+                "passed": true,
+                "weight": 3,
+                "explanation": "matched v2\\.294\\.2-cauat1\\.17",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "no-dotted-fe-branch",
+                "passed": true,
+                "weight": 3,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "plan-file-written",
+                "passed": true,
+                "weight": 1,
+                "explanation": "hotfix-tags.md exists as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 13,
+            "costUsd": 0.36725,
+            "judgeCostUsd": 0.004739,
+            "durationSeconds": 60,
+            "startedAt": "2026-09-19T16:42:51.650Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-AWExsm/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "fans-out-to-both-apps",
+                "passed": true,
+                "weight": 3,
+                "explanation": "matched (?=[\\s\\S]*coverhealth-admin)[\\s\\S]*coverhealth-broker",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "monorepo-branch-asked",
+                "passed": true,
+                "weight": 3,
+                "explanation": "judge votes: PASS FAIL PASS",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  true,
+                  false,
+                  true
+                ],
+                "evidence": "Phase A only — nothing pushed. Plan written to `hotfix-tags.md`:\n\n| env | service | repo | kind | deployed | new tag | branch | cherry-picks | status |\n|---|---|---|---|---|---|---|---|---|\n| CA-UAT | coverhealth-broker | CoverGo/frontend-monorepo | frontend | 2.294.2-cauat1.16 | v2.294.2-cauat1.17 | ASK — frontend-monorepo uses its own branch process | f00dcafe | planned |\n\nPR 994 is merged (`f00dcafe`, \"CH-44310 fix broker quote totals\"), so I took **CH-44310** as the Jira ticket rather than asking.\n\nThree things to settle before I cut anything:\n\n1. **Release branch — this is the blocker.** `frontend-monorepo` doesn't use the `release/<tag>` convention the skill derives for other repos, so I won't invent one. The derived form would be `release/v2-294-2-cauat1-17` (frontend rule: dots → dashes, never the dotted backend form). Confirm that or tell me the real branch.\n2. **The tag number is computed from the deployed tag alone.** `gh` is unavailable, so I couldn't list the repo's existing tags. I seeded `next_tag.py` with `2.294.2-cauat1.16` → `v2.294.2-cauat1.17`. If a `cauat` tag above 1.16 was cut but not yet deployed, the real next tag is higher. Worth a `git tag -l 'v2.294.2-cauat*'` before pushing.\n3. **`coverhealth-admin` sits on the same `2.294.2-cauat1.16`**, built from the same monorepo. If one release tag builds both images, admin gets dragged to 1.17 by this hotfix. I left it out of the plan since your report is broker-only — say if it should be a row.\n\nAlso note I traced `deployed_tag.py` and `next_tag.py` by hand rather than executing them (no shell access in this session); the routing and channel arithmetic match the scripts' logic, but they weren't run.\n\nGive me the branch name and I'll run phase B: branch from `v2.294.2-cauat1.16`, cherry-pick `f00dcafe`, verify it's an ancestor of `origin/main`, push, and publish the release with `--latest=false`."
+              },
+              {
+                "name": "next-fe-tag",
+                "passed": true,
+                "weight": 3,
+                "explanation": "matched v2\\.294\\.2-cauat1\\.17",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "no-dotted-fe-branch",
+                "passed": true,
+                "weight": 3,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "plan-file-written",
+                "passed": true,
+                "weight": 1,
+                "explanation": "hotfix-tags.md exists as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ],
+        "without": [
+          {
+            "score": 0.23076923076923078,
+            "passed": false,
+            "turns": 19,
+            "costUsd": 0.316486,
+            "judgeCostUsd": 0.00302,
+            "durationSeconds": 69,
+            "startedAt": "2026-09-19T16:43:46.835Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-Pidp53/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "fans-out-to-both-apps",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "monorepo-branch-asked",
+                "passed": false,
+                "weight": 3,
+                "explanation": "judge votes: FAIL FAIL FAIL",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  false,
+                  false,
+                  false
+                ],
+                "evidence": "I can't get to the inputs — stopping before I guess at anything.\n\n**What I found**\n\n- The `cg-create-hotfix-tags` skill is not registered in this session. `Skill(cg-create-hotfix-tags)` returns `Unknown skill`, and it's absent from the available-skills list.\n- I can't locate its directory (and therefore `test-fixtures/k8s-saas` or `test-fixtures/prs-frontend-monorepo.json`) by search:\n  - `/private/tmp/e-Pidp53/home/cwd` — empty.\n  - `/private/tmp/e-Pidp53/home` — only `.gitconfig` and `.git/`.\n  - `/private/tmp/e-Pidp53/config/**` — Glob and Grep both hard-denied (\"Permission to read ... denied\").\n  - `/private/tmp/e-Pidp53` and siblings like `plugins/`, `skills/` — denied by don't-ask mode.\n- I also have no Bash tool in this session, so I can't `ls` around the denials, and I couldn't run `git`/`kubectl` steps even once I had the files.\n\n**What I need from you** (any one of these unblocks me)\n\n1. The absolute path to the `cg-create-hotfix-tags` skill directory, plus read permission for that path — then I can read `SKILL.md`, walk the k8s-saas checkout, and read the PR fixture.\n2. Or: enable the skill so `Skill` can invoke it.\n3. Or: paste the contents of `test-fixtures/prs-frontend-monorepo.json` and tell me where the CA-UAT image tags live in the k8s-saas tree, and I'll work from that.\n\nI'd rather ask than produce a hotfix-tag table from assumptions — wrong tags on a UAT environment are the kind of thing that's annoying to unwind. Nothing has been written to `hotfix-tags.md` yet."
+              },
+              {
+                "name": "next-fe-tag",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "no-dotted-fe-branch",
+                "passed": true,
+                "weight": 3,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "plan-file-written",
+                "passed": false,
+                "weight": 1,
+                "explanation": "hotfix-tags.md missing (expected present)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.23076923076923078,
+            "passed": false,
+            "turns": 25,
+            "costUsd": 0.4408325,
+            "judgeCostUsd": 0.002322000000000001,
+            "durationSeconds": 101,
+            "startedAt": "2026-09-19T16:43:51.214Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-cEQCjr/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "fans-out-to-both-apps",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "monorepo-branch-asked",
+                "passed": false,
+                "weight": 3,
+                "explanation": "judge votes: FAIL FAIL FAIL",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  false,
+                  false,
+                  false
+                ],
+                "evidence": "I couldn't get to the fixtures — I'm blocked by permissions, so I've written nothing and have no table to show yet. Here's exactly where it stands.\n\n**What I tried**\n\n| Path | Result |\n|---|---|\n| `Skill(cg-create-hotfix-tags)` | `Unknown skill` — not registered in this session |\n| `/private/tmp/e-cEQCjr/home/cwd/**` | empty (no files at all) |\n| `/private/tmp/e-cEQCjr/home/**` | only `.gitconfig` + `.git/` — no skill dir, no `test-fixtures/` |\n| `/private/tmp/e-cEQCjr/config/**` (incl. `config/skills/…`, `config/plugins/…`) | \"denied by your permission settings\" — explicit deny rule on the whole tree |\n| `/private/tmp`, `/private/tmp/e-cEQCjr` (Glob search for the skill dir) | denied — don't-ask mode |\n\nI also checked for a shell/list tool to locate the directory another way; there is no Bash tool in this session, and the only deferred tools are `NotebookEdit` and `TaskStop`.\n\nSo I can't read `test-fixtures/k8s-saas` (to see the current CA-UAT image tags and chart values) or `test-fixtures/prs-frontend-monorepo.json` (to resolve PR #994 → merge commit, affected apps, and the base tags to bump). Both are required inputs — I'm not going to guess at tags for a UAT deploy.\n\n**To unblock, any one of these works:**\n\n1. Tell me the absolute path of the `cg-create-hotfix-tags` skill directory and grant `Read`/`Glob` on it (most likely it's under `/private/tmp/e-cEQCjr/config/...`, which currently has a blanket deny).\n2. Copy the skill directory (or just `test-fixtures/`) into `/private/tmp/e-cEQCjr/home/cwd/` — that root is readable and writable.\n3. Re-run with the skill actually registered so `Skill` can load it, since its `SKILL.md` presumably carries the tag-naming and ordering rules I should follow rather than invent.\n\nOnce I can read those two fixtures, I'll produce the hotfix tag plan, write it to `hotfix-tags.md` in the working directory, and print the same table here."
+              },
+              {
+                "name": "next-fe-tag",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "no-dotted-fe-branch",
+                "passed": true,
+                "weight": 3,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "plan-file-written",
+                "passed": false,
+                "weight": 1,
+                "explanation": "hotfix-tags.md missing (expected present)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.23076923076923078,
+            "passed": false,
+            "turns": 26,
+            "costUsd": 0.650411,
+            "judgeCostUsd": 0.002798,
+            "durationSeconds": 141,
+            "startedAt": "2026-09-19T16:43:51.836Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-KlzkyQ/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "fans-out-to-both-apps",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "monorepo-branch-asked",
+                "passed": false,
+                "weight": 3,
+                "explanation": "judge votes: FAIL FAIL FAIL",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  false,
+                  false,
+                  false
+                ],
+                "evidence": "I'm blocked before I can start — I can't locate the `cg-create-hotfix-tags` skill directory, and this environment gives me no way to search for it.\n\n**What's available to me:** `Read` (exact paths only, and only under `/private/tmp/e-KlzkyQ/home/`), `Write`, `Edit`. `Glob`, `Grep`, and directory reads are all permission-denied (\"don't ask mode\"), and there is no `Bash` tool at all — not even as a deferred tool. So `find`/`ls`/`ls -R` aren't options either.\n\n**What I tried:**\n- `Skill` with `cg-create-hotfix-tags` → `Unknown skill` (it isn't in the registered skill list, so it isn't in an auto-discovered skill root).\n- Blind path probes of every standard skill/plugin location under `home/` and `home/cwd/` (`.claude/skills/…`, `skills/…`, `.claude/plugins/…`, `.config/claude/skills/…`) → all \"File does not exist\".\n- `/private/tmp/e-KlzkyQ/config/skills/…` → explicitly denied by permission settings; `/private/tmp/e-KlzkyQ/skills/…` and `/private/tmp/e-KlzkyQ/plugins/…` → denied (outside the allowed root).\n- A subagent sweep, in case it had broader permissions — it hit the identical denials.\n\nI stopped rather than keep guessing paths, and I have not written `hotfix-tags.md`: every input to that plan (the k8s-saas manifests and the PR metadata) lives in the directory I can't reach, and a plan for promoting a broker-quote fix to CA-UAT is not something worth inventing.\n\n**To unblock, any one of these is enough:**\n1. Tell me the absolute path to `cg-create-hotfix-tags` — I can read files under it by exact path, including `test-fixtures/prs-frontend-monorepo.json`. I'd also need the paths (or a listing) of the relevant files under `test-fixtures/k8s-saas`, since I can't enumerate that tree either.\n2. Allow `Glob` (one call with `**/cg-create-hotfix-tags/**` resolves it) or `Grep`.\n3. Allow `Bash` for read-only `find`/`ls`.\n\nOption 2 is the cleanest — with `Glob` enabled I can do the whole task in one pass without further back-and-forth."
+              },
+              {
+                "name": "next-fe-tag",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "no-dotted-fe-branch",
+                "passed": true,
+                "weight": 3,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "plan-file-written",
+                "passed": false,
+                "weight": 1,
+                "explanation": "hotfix-tags.md missing (expected present)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1,
+        "scoreWithout": 0.23076923076923075,
+        "passRateWithout": 0,
+        "delta": 0.7692307692307693
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 1,
+    "overallScore": 1,
+    "overallPassRate": 1,
+    "meanDelta": 0.7692307692307693
+  }
+}

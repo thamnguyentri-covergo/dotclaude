@@ -1,0 +1,5 @@
+spec:
+  values:
+    covergo-app:
+      image:
+        tag: 2.382.9-cauat1.1 #{"$covergopolicy":"service:policies:tag"}

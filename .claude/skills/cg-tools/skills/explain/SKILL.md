@@ -13,5 +13,11 @@ Rules:
 - Diagrams carry the explanation. Text is labels and short captions only.
 - Show the real sequence and the real data that moves between components.
 - Always draw all visuals and diagrams in Excalidraw hand-drawing style: wobbly/jagged strokes, hachure fill, handwriting font (e.g. Patrick Hand) — like a whiteboard sketch, never clean vector style.
+- Never label a shape with bare `<text>` — SVG text does not wrap, so paths, commands and flags spill over the border. Cover the shape with a `<foreignObject>` at its exact x/y/width/height, holding one wrapping div. Only free-floating captions stay `<text>`.
+
+```html
+<foreignObject x="52" y="196" width="262" height="118"><div class="lbl">allowed_tools: [Read, Grep, Skill]</div></foreignObject>
+<style>.lbl{box-sizing:border-box;height:100%;padding:9px 13px;display:flex;flex-direction:column;justify-content:center;overflow-wrap:anywhere}</style>
+```
 
 Topic: $ARGUMENTS

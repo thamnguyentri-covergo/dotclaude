@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.278",
+  "startedAt": "2026-09-19T15:56:23.031Z",
+  "durationSeconds": 84,
+  "costUsd": 0.437701,
+  "partial": false,
+  "suite": {
+    "root": "/Users/thamnguyen-covergo/dotclaude/.claude/skills/cg-create-hotfix-tags",
+    "ablation": "with-without",
+    "caseFilter": "plan-two-envs*",
+    "threshold": 1,
+    "concurrency": 1,
+    "plugins": [
+      {
+        "name": "cg-create-hotfix-tags",
+        "path": "/Users/thamnguyen-covergo/dotclaude/.claude/skills/cg-create-hotfix-tags"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "plan-two-envs-one-service",
+      "dir": "evals/plan-two-envs-one-service",
+      "source": "mixed",
+      "promptMarkdown": "this one's merged and needs to go out: https://github.com/CoverGo/policies/pull/1821 —\nwe want it on CA-UAT and CA-PREPROD.\n\nThe k8s-saas checkout is at ./fixture/k8s-saas. PR metadata is already resolved in\n./fixture/prs.json (gh is unavailable here, use that file). Write the plan to hotfix-tags.md.\n",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 30,
+      "graders": [
+        {
+          "name": "capreprod-starts-channel",
+          "type": "regex",
+          "weight": 3,
+          "config": {
+            "target": "last_message",
+            "pattern": "v2\\.381\\.4-capreprod1\\.0",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "cauat-bumps-y",
+          "type": "regex",
+          "weight": 3,
+          "config": {
+            "target": "last_message",
+            "pattern": "v2\\.382\\.9-cauat1\\.2",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "plan-file-written",
+          "type": "file_exists",
+          "weight": 2,
+          "config": {
+            "path": "hotfix-tags.md",
+            "exists": true
+          }
+        },
+        {
+          "name": "rows-stay-planned",
+          "type": "regex",
+          "weight": 2,
+          "config": {
+            "target": "last_message",
+            "pattern": "\\b(pushed|built|git push|gh release create)\\b",
+            "flags": "i",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill"
+          }
+        },
+        {
+          "name": "table-is-reviewable",
+          "type": "llm",
+          "weight": 2,
+          "graderMarkdown": "hotfix-tags.md holds one row per environment for the policies service. Each row names the\ndeployed tag, the new tag, a release branch derived from the new tag, the cherry-pick SHA\na1b2c3d4, and status `planned`. The response also asks the user to confirm before anything\nis pushed. It does not claim any branch, tag or release was created.",
+          "config": {
+            "criteria": "hotfix-tags.md holds one row per environment for the policies service. Each row names the\ndeployed tag, the new tag, a release branch derived from the new tag, the cherry-pick SHA\na1b2c3d4, and status `planned`. The response also asks the user to confirm before anything\nis pushed. It does not claim any branch, tag or release was created.",
+            "focus": "last_message"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 0,
+            "passed": false,
+            "turns": 16,
+            "costUsd": 0.27652849999999995,
+            "judgeCostUsd": 0.0032679999999999996,
+            "durationSeconds": 51,
+            "startedAt": "2026-09-19T15:56:23.044Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-VYm3w2/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "capreprod-starts-channel",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "cauat-bumps-y",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "plan-file-written",
+                "passed": false,
+                "weight": 2,
+                "explanation": "hotfix-tags.md missing (expected present)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "rows-stay-planned",
+                "passed": false,
+                "weight": 2,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              },
+              {
+                "name": "table-is-reviewable",
+                "passed": false,
+                "weight": 2,
+                "explanation": "judge votes: FAIL FAIL FAIL",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  false,
+                  false,
+                  false
+                ],
+                "evidence": "I stopped before writing anything — both inputs you pointed me at are missing, and every number in the plan would have to come from them.\n\n**What I found**\n\n- `./fixture/prs.json` — does not exist.\n- `./fixture/k8s-saas` — does not exist.\n- The working directory `/private/tmp/e-VYm3w2/home/cwd` is empty (no hidden files either). I also checked `/private/tmp/e-VYm3w2/home` — only `.gitconfig` and `.git/` there, no `fixture/`.\n\nI can't glob outside the working directory (permission denied in the current mode), so if the fixtures live somewhere else on disk I can't go find them myself.\n\n**Why I'm not writing `hotfix-tags.md` anyway**\n\nPhase A needs three facts per row, and all three come from those files: the merge commit SHA for policies#1821 (from `prs.json`), the version currently deployed on CA-UAT and CA-PREPROD (from the k8s-saas overlays at `datacenters/aws/ca-central-1/uat/backend` and `.../preprod/backend`), and the existing channel tags to bump from. Without them I'd be inventing the deployed versions, which is precisely the mistake the plan table exists to catch — a fabricated `cauat1.2` looks identical to a real one on review.\n\n**One more thing worth knowing:** I have no Bash tool in this session, so I can't run the skill's `deployed_tag.py` / `next_tag.py`. That part I can work around — with the k8s-saas checkout present I can read the overlay manifests directly and compute the channel tags by hand (`CA-UAT` → `cauat`, `CA-PREPROD` → `capreprod`, per `references/environments.md`). But it does mean I can't execute Phase B at all: no `git`, no `gh`, so no branch pushes or release creation. Phase A's plan file is the most I can deliver here.\n\n**What I need from you**\n\n1. The real path to `prs.json` and the k8s-saas checkout (or drop them under `/private/tmp/e-VYm3w2/home/cwd/fixture/`).\n2. Confirm the Jira ticket — I'd normally pull the `CH-` code off PR #1821's title, but I can't read it yet.\n\nOnce the files are there I'll resolve both rows and write the table for your review before anything would get pushed."
+              }
+            ]
+          }
+        ],
+        "without": [
+          {
+            "score": 0.16666666666666666,
+            "passed": false,
+            "turns": 11,
+            "costUsd": 0.16117250000000002,
+            "judgeCostUsd": 0.0018449999999999999,
+            "durationSeconds": 33,
+            "startedAt": "2026-09-19T15:57:14.060Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-LlIxIP/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "capreprod-starts-channel",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "cauat-bumps-y",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "plan-file-written",
+                "passed": false,
+                "weight": 2,
+                "explanation": "hotfix-tags.md missing (expected present)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "rows-stay-planned",
+                "passed": true,
+                "weight": 2,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "table-is-reviewable",
+                "passed": false,
+                "weight": 2,
+                "explanation": "judge votes: FAIL FAIL FAIL",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  false,
+                  false,
+                  false
+                ],
+                "evidence": "I'm blocked before I can start — neither input exists.\n\n**What I checked** (working dir `/private/tmp/e-LlIxIP/home/cwd`):\n\n- `./fixture/prs.json` — not found\n- `./fixture/k8s-saas/` — not found\n- The working directory is empty entirely (no files, hidden or otherwise)\n\nI also tried searching the parent directory `/private/tmp/e-LlIxIP` in case the fixtures landed a level up, but reads outside the working directory are denied by the current permission mode.\n\n**Why I'm not proceeding under an assumption:** every concrete detail of this plan comes from those two files — which service/chart PR #1821 touches, the merge commit and resulting image tag, and the current tag values in the CA-UAT and CA-PREPROD overlays. Guessing any of those produces a plausible-looking `hotfix-tags.md` with wrong image tags, which is worse than nothing for a hotfix going to a pre-production environment. I don't have network access to `gh` or GitHub to fill the gap, as you noted.\n\n**To unblock, either:**\n\n1. Tell me the actual path to the fixtures if they're elsewhere on disk — and if it's outside `/private/tmp/e-LlIxIP/home/cwd`, I'll need permission to read there, or\n2. Re-create/copy them into `./fixture/`, or\n3. Paste the PR #1821 metadata and the relevant CA-UAT / CA-PREPROD tag files inline, and I'll write the plan from that.\n\nOnce I have them, the plan itself is quick: pin the new tag from #1821 into the CA-UAT and CA-PREPROD overlays, note the current tags for rollback, and write it to `hotfix-tags.md`."
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 0,
+        "passRate": 0,
+        "scoreWithout": 0.16666666666666666,
+        "passRateWithout": 0,
+        "delta": -0.16666666666666666
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 0,
+    "overallScore": 0,
+    "overallPassRate": 0,
+    "meanDelta": -0.16666666666666666
+  }
+}

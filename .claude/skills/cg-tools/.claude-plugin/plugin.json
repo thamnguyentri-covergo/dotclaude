@@ -1,0 +1,10 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "cg-tools",
+  "version": "0.1.0",
+  "description": "Personal explainer and PR-review skills",
+  "author": {
+    "name": "Tham Nguyen",
+    "email": "tham.nguyentri@covergo.com"
+  }
+}

@@ -5,7 +5,7 @@
       "repo": "anthropics/claude-plugins-official"
     },
     "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/claude-plugins-official",
-    "lastUpdated": "2026-09-11T17:32:37.036Z",
+    "lastUpdated": "2026-09-22T11:26:29.728Z",
     "autoUpdate": true
   },
   "nx-claude-plugins": {
@@ -14,7 +14,7 @@
       "repo": "nrwl/nx-ai-agents-config"
     },
     "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/nx-claude-plugins",
-    "lastUpdated": "2026-09-11T17:32:39.878Z",
+    "lastUpdated": "2026-09-22T11:26:35.784Z",
     "autoUpdate": true
   },
   "covergo-marketplace": {
@@ -23,7 +23,7 @@
       "repo": "CoverGo/CoverGo.Workspace"
     },
     "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/covergo-marketplace",
-    "lastUpdated": "2026-09-11T17:32:43.073Z",
+    "lastUpdated": "2026-09-22T11:26:46.394Z",
     "autoUpdate": true
   },
   "caveman": {
@@ -65,5 +65,13 @@
     },
     "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/ponytail",
     "lastUpdated": "2026-06-25T03:27:27.038Z"
+  },
+  "i-have-adhd": {
+    "source": {
+      "source": "github",
+      "repo": "ayghri/i-have-adhd"
+    },
+    "installLocation": "/Users/thamnguyen-covergo/.claude/plugins/marketplaces/i-have-adhd",
+    "lastUpdated": "2026-09-12T16:44:31.014Z"
   }
 }

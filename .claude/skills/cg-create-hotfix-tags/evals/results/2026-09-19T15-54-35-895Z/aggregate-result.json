@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.278",
+  "startedAt": "2026-09-19T15:54:35.895Z",
+  "durationSeconds": 92,
+  "costUsd": 0.4852055,
+  "partial": false,
+  "suite": {
+    "root": "/Users/thamnguyen-covergo/dotclaude/.claude/skills/cg-create-hotfix-tags",
+    "ablation": "with-without",
+    "caseFilter": "plan-two-envs*",
+    "threshold": 1,
+    "concurrency": 1,
+    "plugins": [
+      {
+        "name": "cg-create-hotfix-tags",
+        "path": "/Users/thamnguyen-covergo/dotclaude/.claude/skills/cg-create-hotfix-tags"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "plan-two-envs-one-service",
+      "dir": "evals/plan-two-envs-one-service",
+      "source": "mixed",
+      "promptMarkdown": "this one's merged and needs to go out: https://github.com/CoverGo/policies/pull/1821 —\nwe want it on CA-UAT and CA-PREPROD.\n\nThe k8s-saas checkout is at ./fixture/k8s-saas. PR metadata is already resolved in\n./fixture/prs.json (gh is unavailable here, use that file). Write the plan to hotfix-tags.md.\n",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 30,
+      "graders": [
+        {
+          "name": "capreprod-starts-channel",
+          "type": "regex",
+          "weight": 3,
+          "config": {
+            "target": "last_message",
+            "pattern": "v2\\.381\\.4-capreprod1\\.0",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "cauat-bumps-y",
+          "type": "regex",
+          "weight": 3,
+          "config": {
+            "target": "last_message",
+            "pattern": "v2\\.382\\.9-cauat1\\.2",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "plan-file-written",
+          "type": "file_exists",
+          "weight": 2,
+          "config": {
+            "path": "hotfix-tags.md",
+            "exists": true
+          }
+        },
+        {
+          "name": "rows-stay-planned",
+          "type": "regex",
+          "weight": 2,
+          "config": {
+            "target": "last_message",
+            "pattern": "(?i)\\b(pushed|built|git push|gh release create)\\b",
+            "flags": "",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill"
+          }
+        },
+        {
+          "name": "table-is-reviewable",
+          "type": "llm",
+          "weight": 2,
+          "graderMarkdown": "hotfix-tags.md holds one row per environment for the policies service. Each row names the\ndeployed tag, the new tag, a release branch derived from the new tag, the cherry-pick SHA\na1b2c3d4, and status `planned`. The response also asks the user to confirm before anything\nis pushed. It does not claim any branch, tag or release was created.",
+          "config": {
+            "criteria": "hotfix-tags.md holds one row per environment for the policies service. Each row names the\ndeployed tag, the new tag, a release branch derived from the new tag, the cherry-pick SHA\na1b2c3d4, and status `planned`. The response also asks the user to confirm before anything\nis pushed. It does not claim any branch, tag or release was created.",
+            "focus": "last_message"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 0.25,
+            "passed": false,
+            "turns": 17,
+            "costUsd": 0.27995,
+            "judgeCostUsd": 0.0022979999999999997,
+            "durationSeconds": 53,
+            "startedAt": "2026-09-19T15:54:35.909Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-rfuE5B/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "capreprod-starts-channel",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "cauat-bumps-y",
+                "passed": true,
+                "weight": 3,
+                "explanation": "matched v2\\.382\\.9-cauat1\\.2",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "plan-file-written",
+                "passed": false,
+                "weight": 2,
+                "explanation": "hotfix-tags.md missing (expected present)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "rows-stay-planned",
+                "passed": false,
+                "weight": 2,
+                "explanation": "grader threw: Invalid regular expression: unrecognized character after (?",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              },
+              {
+                "name": "table-is-reviewable",
+                "passed": false,
+                "weight": 2,
+                "explanation": "judge votes: FAIL FAIL FAIL",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  false,
+                  false,
+                  false
+                ],
+                "evidence": "I'm blocked before Phase A can produce anything real. Two separate problems:\n\n**1. The fixture inputs aren't there.**\n- `./fixture/prs.json` — does not exist.\n- `./fixture/k8s-saas` — does not exist.\n\nThe working directory (`/private/tmp/e-rfuE5B/home/cwd`) is empty, and a search across `/private/tmp/e-rfuE5B/home` for any `.json` or any `k8s-saas` path turns up nothing. So the checkout and the PR metadata file were never created, or they live somewhere outside this sandbox.\n\n**2. I have no Bash or Write tool in this session.**\nEven with the fixtures present, I couldn't run the skill's `scripts/deployed_tag.py` and `scripts/next_tag.py`, run `git`, or write `hotfix-tags.md`. The only tools available to me here are read/search ones (Read, Glob, Grep) plus Skill/Agent.\n\n**What I'm deliberately not doing:** inventing the numbers. The plan hinges on the version currently deployed to CA-UAT and CA-PREPROD and on the existing channel tags — the skill is explicit that a missing manifest gets reported, not guessed, and a fabricated `v2.382.9-cauat1.2` in `hotfix-tags.md` is exactly the kind of row that later gets pushed and built for real.\n\n**To unblock, I need either:**\n- the actual paths to the k8s-saas checkout and `prs.json` (if they're outside `cwd`, tell me where and I'll read them), **and**\n- Bash + Write enabled — Bash for `deployed_tag.py` / `next_tag.py` / `git`, Write for `hotfix-tags.md`.\n\nFor reference, what I already have pinned down without those inputs: both targets route to `datacenters/aws/ca-central-1/{uat,preprod}` with the `backend` overlay, and the tag channels are `cauat` and `capreprod`. The missing pieces are the PR's repo/service/merge SHA and the deployed version per environment — all four come from the files above.\n\nOne thing to confirm when you come back: the PR is in `CoverGo/policies`, so the service is presumably `policies` on the backend overlay — but I'll take that from `prs.json` rather than from the repo name, since the two diverge for some services."
+              }
+            ]
+          }
+        ],
+        "without": [
+          {
+            "score": 0,
+            "passed": false,
+            "turns": 14,
+            "costUsd": 0.20525550000000004,
+            "judgeCostUsd": 0.002202,
+            "durationSeconds": 39,
+            "startedAt": "2026-09-19T15:55:29.339Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-sSUSut/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "capreprod-starts-channel",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "cauat-bumps-y",
+                "passed": false,
+                "weight": 3,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "plan-file-written",
+                "passed": false,
+                "weight": 2,
+                "explanation": "hotfix-tags.md missing (expected present)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "rows-stay-planned",
+                "passed": false,
+                "weight": 2,
+                "explanation": "grader threw: Invalid regular expression: unrecognized character after (?",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "table-is-reviewable",
+                "passed": false,
+                "weight": 2,
+                "explanation": "judge votes: FAIL FAIL FAIL",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  false,
+                  false,
+                  false
+                ],
+                "evidence": "I'm blocked before I can start — both inputs you pointed me at are missing, and I also don't have the tools to produce the output file.\n\n**What I checked:**\n\n- `./fixture/prs.json` — doesn't exist\n- `./fixture/k8s-saas/` — doesn't exist\n- The working directory `/private/tmp/e-sSUSut/home/cwd` is **completely empty** (no files at all, hidden ones included)\n- The parent `/private/tmp/e-sSUSut/home` contains only `.gitconfig` and a `.git` stub\n\n**Two separate problems:**\n\n1. **No input data.** The fixture tree was never created, or it landed somewhere other than this session's cwd. Without `prs.json` I have no PR metadata (merge commit SHA, base branch, merged-at, files touched), and without the `k8s-saas` checkout I can't see how CA-UAT and CA-PREPROD pin image tags — which is the whole substance of the plan.\n2. **No way to write the file.** My available tools here are Glob, Grep, Read, Skill, ToolSearch, and Agent — there's no Write, Edit, or Bash. So even with the fixtures I couldn't create `hotfix-tags.md` myself; I'd have to hand you the content to paste.\n\nI don't want to guess at a tagging plan for CoverGo policies — the tag format, which values file each environment reads, and whether CA-PREPROD tracks CA-UAT or is pinned independently are all things that have to come from the actual repo, not from assumption. A plausible-looking but invented plan is worse than none for a hotfix going to pre-prod.\n\n**To unblock, whichever is easiest:**\n\n- Tell me the real path to the fixture directory if it's outside this cwd, and I'll read it from there.\n- Or re-run the setup that was supposed to populate `./fixture`.\n- And confirm whether I should output the plan as chat text for you to save, or whether Write/Bash can be enabled for this session.\n\nIf you paste the contents of `prs.json` and the relevant env files from `k8s-saas` directly into chat, I can draft the full plan right now and give it to you as markdown to drop into `hotfix-tags.md`."
+              }
+            ]
+          }
+        ]
+      },
+      "advisories": [
+        "grader \"plan-file-written\" cannot pass with the granted tools: it checks a file the run creates, but no tool the run may use can create one (a plugin hook still could; a skill's own allowed-tools does not count inside a run) — add Write (or Edit / Bash) to the case's allowed_tools and grant it with --allow-tools"
+      ],
+      "aggregates": {
+        "score": 0.25,
+        "passRate": 0,
+        "scoreWithout": 0,
+        "passRateWithout": 0,
+        "delta": 0.25
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 0,
+    "overallScore": 0.25,
+    "overallPassRate": 0,
+    "meanDelta": 0.25
+  }
+}

@@ -1,0 +1,5 @@
+spec:
+  values:
+    covergo-app:
+      image:
+        tag: 2.381.4 #{"$covergopolicy":"service:policies:tag"}

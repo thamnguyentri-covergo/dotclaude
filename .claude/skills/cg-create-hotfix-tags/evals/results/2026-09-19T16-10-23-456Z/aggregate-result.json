@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.278",
+  "startedAt": "2026-09-19T16:10:23.456Z",
+  "durationSeconds": 58,
+  "costUsd": 0.32872799999999996,
+  "partial": false,
+  "suite": {
+    "root": "/Users/thamnguyen-covergo/dotclaude/.claude/skills/cg-create-hotfix-tags",
+    "ablation": "none",
+    "caseFilter": "plan-two-envs*",
+    "threshold": 1,
+    "concurrency": 1,
+    "plugins": [
+      {
+        "name": "cg-create-hotfix-tags",
+        "path": "/Users/thamnguyen-covergo/dotclaude/.claude/skills/cg-create-hotfix-tags"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "plan-two-envs-one-service",
+      "dir": "evals/plan-two-envs-one-service",
+      "source": "mixed",
+      "promptMarkdown": "this one's merged and needs to go out: https://github.com/CoverGo/policies/pull/1821 —\nwe want it on CA-UAT and CA-PREPROD.\n\nOffline fixtures stand in for the live systems: the k8s-saas checkout is at\ntest-fixtures/k8s-saas inside the cg-create-hotfix-tags skill\ndirectory, and PR metadata is already resolved in test-fixtures/prs.json beside it (gh is\nunavailable here, read that file instead). Write the plan to hotfix-tags.md in the\nworking directory and print the same table in your reply.\n",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 30,
+      "graders": [
+        {
+          "name": "capreprod-starts-channel",
+          "type": "regex",
+          "weight": 3,
+          "config": {
+            "target": "last_message",
+            "pattern": "v2\\.381\\.4-capreprod1\\.0",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "cauat-bumps-y",
+          "type": "regex",
+          "weight": 3,
+          "config": {
+            "target": "last_message",
+            "pattern": "v2\\.382\\.9-cauat1\\.2",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "plan-file-written",
+          "type": "file_exists",
+          "weight": 2,
+          "config": {
+            "path": "hotfix-tags.md",
+            "exists": true
+          }
+        },
+        {
+          "name": "rows-stay-planned",
+          "type": "regex",
+          "weight": 2,
+          "config": {
+            "target": "last_message",
+            "pattern": "\\|\\s*(pushed|built|failed)\\s*\\|",
+            "flags": "i",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill"
+          }
+        },
+        {
+          "name": "table-is-reviewable",
+          "type": "llm",
+          "weight": 2,
+          "graderMarkdown": "The file holds one table row per environment (CA-UAT, CA-PREPROD) for the policies service.\nEach row names the currently deployed tag, the new hotfix tag, a release branch derived from\nthat new tag, the cherry-pick SHA a1b2c3d4, and status `planned`.",
+          "config": {
+            "criteria": "The file holds one table row per environment (CA-UAT, CA-PREPROD) for the policies service.\nEach row names the currently deployed tag, the new hotfix tag, a release branch derived from\nthat new tag, the cherry-pick SHA a1b2c3d4, and status `planned`.",
+            "focus": {
+              "source": "file",
+              "path": "hotfix-tags.md"
+            }
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 0.8461538461538461,
+            "passed": false,
+            "turns": 12,
+            "costUsd": 0.32872799999999996,
+            "judgeCostUsd": 0.0033989999999999997,
+            "durationSeconds": 58,
+            "startedAt": "2026-09-19T16:10:23.470Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-qkRulk/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "capreprod-starts-channel",
+                "passed": true,
+                "weight": 3,
+                "explanation": "matched v2\\.381\\.4-capreprod1\\.0",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "cauat-bumps-y",
+                "passed": true,
+                "weight": 3,
+                "explanation": "matched v2\\.382\\.9-cauat1\\.2",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "plan-file-written",
+                "passed": true,
+                "weight": 2,
+                "explanation": "hotfix-tags.md exists as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "rows-stay-planned",
+                "passed": true,
+                "weight": 2,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "table-is-reviewable",
+                "passed": false,
+                "weight": 2,
+                "explanation": "judge votes: FAIL FAIL FAIL",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  false,
+                  false,
+                  false
+                ],
+                "evidence": "---\njira: [CH-44295]\nsource_prs: [CoverGo/policies#1821]\n---\n| env | service | repo | kind | deployed | new tag | branch | cherry-picks | status |\n|---|---|---|---|---|---|---|---|---|\n| CA-UAT | policies | CoverGo/policies | backend | 2.382.9-cauat1.1 | v2.382.9-cauat1.2 | release/v2.382.9-cauat1.2 | a1b2c3d4 | planned |\n| CA-PREPROD | policies | CoverGo/policies | backend | 2.381.4 | v2.381.4-capreprod1.0 | release/v2.381.4-capreprod1.0 | a1b2c3d4 | planned |\n\n## Notes\n\n- PR: CoverGo/policies#1821 — \"CH-44295 fix premium rounding\", state MERGED, merge commit `a1b2c3d4`.\n- **Existing channel tags were not enumerated.** `gh` is unavailable in this environment, so\n  `gh api repos/CoverGo/policies/tags` could not be run. Both rows need confirmation before phase B:\n  - CA-UAT: the deployed tag `2.382.9-cauat1.1` was passed as the known existing channel tag, giving\n    `1.2`. If a higher `cauat` tag on core `2.382.9` exists but is not deployed, this tag collides.\n  - CA-PREPROD: no `capreprod` tag is known for core `2.381.4`, so the channel starts at `1.0`.\n    Confirm no `v2.381.4-capreprod*` tag already exists.\n- **Branch naming needs a ruling.** The skill's prose says backend branches keep dots\n  (`release/v1.2.1`) and only frontend uses dashes (`release/v1-2-1`, because frontend tooling\n  rejects dots); the example row in the skill's template shows a backend row with a dashed branch.\n  The rows above follow the prose (dots, backend). Say the word if these should be\n  `release/v2-382-9-cauat1-2` / `release/v2-381-4-capreprod1-0` instead.\n- Phase B base commits are the newest tag in each channel, not the base release:\n  CA-UAT branches from `v2.382.9-cauat1.1`; CA-PREPROD branches from `v2.381.4`.\n- `git merge-base --is-ancestor a1b2c3d4 origin/main` could not be verified offline — it must be\n  checked during phase B, since a fix that exists only on a release branch is silently reverted by\n  the next platform-version promotion.\n"
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 0.8461538461538461,
+        "passRate": 0
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 0,
+    "overallScore": 0.8461538461538461,
+    "overallPassRate": 0
+  }
+}

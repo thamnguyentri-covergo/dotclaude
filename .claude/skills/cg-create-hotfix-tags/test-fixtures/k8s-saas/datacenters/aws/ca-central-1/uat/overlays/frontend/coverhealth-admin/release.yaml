@@ -1,0 +1,5 @@
+spec:
+  values:
+    covergo-app:
+      image:
+        tag: 2.294.2-cauat1.16 #{"$covergopolicy":"service:coverhealth-admin-monorepo:tag"}
